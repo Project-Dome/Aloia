@@ -42,8 +42,7 @@ define(
                         LEFT JOIN customrecord_pd_ccr_approval_comission AS apc ON apc.custrecord_pd_ccr_transaction = invoiceLine.transaction
                     where
                         t.recordtype = 'invoice'
-                        and t.status = 'CustInvc:B'
-                        and t.id = 17703
+                        and t.status = 'B'
                         and apc.id IS NULL`
                 ].join(' ');
 

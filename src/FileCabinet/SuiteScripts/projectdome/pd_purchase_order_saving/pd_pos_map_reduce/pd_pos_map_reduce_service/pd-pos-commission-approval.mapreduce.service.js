@@ -68,10 +68,9 @@ define(
                         LEFT JOIN customrecord_pd_pos_approval_saving AS aps ON aps.custrecord_pd_pos_pas_transaction = vendorBillLine.transaction  
                         AND aps.custrecord_pd_pos_pas_employee = tl.custcol_aae_buyer_purchase_order
                     WHERE
-                        transaction.status = 'CustInvc:B'
+                        transaction.status = 'B'
                         AND transaction.recordtype = 'invoice'
                         AND aps.id IS NULL
-                        AND transaction.id = 19069
                     GROUP BY
                         tl.custcol_aae_purchaseorder,
                         transaction.id,

@@ -34,7 +34,7 @@ define(
         const ITEM_SUBLIST_FIELDS = {
             finalCost: { name: 'custcol_aae_final_cost_po' },
             estimatedCost: { name: 'custcol_aae_estimated_cost_po' },
-            amount: { name: "formulanumeric", formula: "((NVL({custcol_aae_estimated_cost_po}, 0) - NVL(({rate}*{quantity})/{quantityuom}, 0)) * NVL({quantityuom}, 0) * (-1)) * 0.10" },
+            amount: { name: "formulanumeric", formula: "((NVL({custcol_aae_estimated_cost_po}, 0) - NVL(({rate}*{quantity})/{quantityuom}, 0)) * NVL({quantityuom}, 0)) * 0.10" },
             item: { name: 'item', type: 'list' },
             rate: { name: "formulanumeric", formula: "ROUND(({rate}*{quantity})/{quantityuom}, 2)" },
             lineSequenceNumber: { name: 'linesequencenumber' },
@@ -47,7 +47,7 @@ define(
             lineReference: { name: 'custcol_pd_cso_line_reference' },
             buyer: { name: 'custcol_aae_buyer_purchase_order' },
             perUnit: { name: "formulanumeric", formula: "{custcol_aae_estimated_cost_po}-(ROUND(({rate}*{quantity})/{quantityuom}, 2))" },
-            total: { name: "formulanumeric", formula: "(NVL({custcol_aae_estimated_cost_po}, 0) - NVL(({rate}*{quantity})/{quantityuom}, 0)) * NVL({quantityuom}, 0) * (-1)" },
+            total: { name: "formulanumeric", formula: "(NVL({custcol_aae_estimated_cost_po}, 0) - NVL(({rate}*{quantity})/{quantityuom}, 0)) * NVL({quantityuom}, 0)" },
         }
 
         const EXPENSE_SUBLIST_ID = 'expense';

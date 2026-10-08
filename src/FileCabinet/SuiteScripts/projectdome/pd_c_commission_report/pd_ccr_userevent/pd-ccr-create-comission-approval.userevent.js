@@ -8,13 +8,15 @@ define(
         'N/record',
         'N/search',
 
-        '../pd_ccr_service/pd-ccr-invoice.service'
+        '../pd_ccr_service/pd-ccr-invoice.service',
+        '../pd_ccr_service/pd-ccr-status-commission-approval.service'
     ],
     function (
         record,
         search,
 
-        invoice_service
+        invoice_service,
+        status_commission_service
     ) {
         function afterSubmit(context) {
             if (context.type !== context.UserEventType.CREATE &&
@@ -44,7 +46,7 @@ define(
             }
 
             // Só cria se a fatura estiver totalmente paga
-            if (amountRemaining === 0) {
+            if (Number(amountRemaining) === 0) {
 
                 var existingSearch = search.create({
                     type: 'customrecord_pd_ccr_approval_comission',
@@ -68,6 +70,11 @@ define(
                 customRec.setValue({
                     fieldId: 'custrecord_pd_ccr_transaction',
                     value: invoiceId
+                });
+
+                customRec.setValue({
+                    fieldId: 'custrecord_pd_ccr_status',
+                    value: status_commission_service.STATUS_COMMISSION.PENDING
                 });
 
                 customRec.setValue({

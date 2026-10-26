@@ -7,6 +7,7 @@ define(
     [
         'N/record',
         'N/search',
+        'N/query',
 
         '../pd_ccr_service/pd-ccr-invoice.service',
         '../pd_ccr_service/pd-ccr-status-commission-approval.service'
@@ -14,10 +15,21 @@ define(
     function (
         record,
         search,
+        query,
 
         invoice_service,
         status_commission_service
     ) {
+        function hasCreditMemoApplied(invoiceId) {
+            const _rows = query.runSuiteQL({
+                query: `SELECT 1 AS found FROM NextTransactionLink AS ntl
+                        INNER JOIN transaction AS cm ON cm.id = ntl.nextdoc
+                        WHERE ntl.previousdoc = ? AND cm.recordtype = 'creditmemo'`,
+                params: [invoiceId]
+            }).asMappedResults();
+            return _rows.length > 0;
+        }
+
         function afterSubmit(context) {
             if (context.type !== context.UserEventType.CREATE &&
                 context.type !== context.UserEventType.EDIT &&
@@ -43,6 +55,12 @@ define(
                 })
 
                 return
+            }
+
+            // Invoice quitada por credit memo não gera comissão (Política de Comissão, Regra 7)
+            if (hasCreditMemoApplied(invoiceId)) {
+                log.audit('Invoice closed by credit memo', 'Invoice ID: ' + invoiceId);
+                return;
             }
 
             // Só cria se a fatura estiver totalmente paga

@@ -41,7 +41,10 @@ define(
             saleValue: { name: 'custrecord_pd_pos_pas_sale_value' },
             finalProfit: { name: 'custrecord_pd_pos_pas_final_profit' },
             purchaseValue: { name: 'custrecord_pd_pos_pas_purchase_value' },
-            buyerCommission: { name: 'custrecord_pd_pos_pas_buyer_commission' }
+            buyerCommission: { name: 'custrecord_pd_pos_pas_buyer_commission' },
+            invoice: { name: 'custrecord_pd_pos_pas_invoice' },
+            lineReference: { name: 'custrecord_pd_pos_pas_line_reference' },
+            quantity: { name: 'custrecord_pd_pos_pas_quantity' }
         };
 
         function getBy(options) {
@@ -146,6 +149,9 @@ define(
             approvalCommissionData[FIELDS.finalProfit.name] = options?.data?.finalProfit;
             approvalCommissionData[FIELDS.purchaseValue.name] = options?.data?.purchaseValue;
             approvalCommissionData[FIELDS.buyerCommission.name] = options?.data?.buyerCommission;
+            approvalCommissionData[FIELDS.invoice.name] = options?.data?.invoice;
+            approvalCommissionData[FIELDS.lineReference.name] = options?.data?.lineReference;
+            approvalCommissionData[FIELDS.quantity.name] = options?.data?.quantity;
 
             return record_util
                 .handler(options.record)

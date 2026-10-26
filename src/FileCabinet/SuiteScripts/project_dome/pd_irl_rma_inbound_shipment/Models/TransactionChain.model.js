@@ -13,7 +13,7 @@
 define([
     'N/log',
     '../../pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-search.util',
-    '../../pd_c_netsuite_tools/pd_cnt_common/pd-cntc-common.util',
+    '../../pd_c_netsuite_tools/pd_cnt_common/pd-cntc-common.util.js',
 ], function (log, search_util) {
 
     /**

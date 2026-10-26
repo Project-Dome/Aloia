@@ -1,7 +1,7 @@
 # Project Manifest: pd_irl — RMA Inbound Shipment
 
 **Cliente:** Aloia
-**Gerado em:** 22/10/2026
+**Gerado em:** 26/10/2026
 **Versão do Spec:** —
 **Gerado por:** manifest-builder
 
@@ -11,6 +11,9 @@
 
 | Script ID | Arquivo | Tipo | Record Alvo | Descrição |
 |-----------|---------|------|-------------|-----------|
+| `customscript_pd_irl_inbo_ship_rma_us` | `IRL_RmaInboundShipments.UE.js` | UserEvent | `returnauthorization` | Adiciona a subaba "Inbound Shipments Vinculados" ao Return Authorization nos modos VIEW e EDIT (EP1) |
+
+> Deploy ID do script `customscript_pd_irl_inbo_ship_rma_us`: `customdeploy_pd_irl_inbo_ship_rma_us`.
 
 ---
 

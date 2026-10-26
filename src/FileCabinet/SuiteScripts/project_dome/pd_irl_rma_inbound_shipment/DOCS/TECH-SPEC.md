@@ -29,7 +29,11 @@ O vínculo entre RMA e Inbound Shipment é modelado por um custom record dedicad
   citados neste documento (`otherrefnum`, `salesrep`, `custcol_pd_partnumbercustomer`, etc.) ainda
   não foram confirmados em conta real — aguardando liberação de acesso ao conector NetSuite (Aloia
   produção, 11559462) ou fornecimento manual pelo usuário. Até lá, os nomes de campo usados neste
-  documento são os **nomes funcionais/script IDs conhecidos**, não confirmados contra a conta.
+  documento são os **nomes funcionais/script IDs conhecidos**, não confirmados contra a conta. Os 4
+  campos nativos adicionados ao formulário do EP2 (seção 6) — Bill Of Lading, Expected Shipping
+  Date, Expected Delivery Date e Memo — seguem a mesma pendência: os internal IDs prováveis
+  (`billofladingno`, `expectedshippingdate`, `expecteddeliverydate`, `memo`, baseados em padrão
+  conhecido do NetSuite) ainda não foram verificados contra a conta real.
 - **Existência de `custcol_pd_partnumbercustomer` na linha de item do RMA** — presumida, não
   confirmada. Precisa validação quando o acesso à conta for liberado.
 - **Cadeia de joins RMA → Invoice → Sales Order → Purchase Order → Vendor** (coluna "Vendor" da
@@ -113,11 +117,18 @@ nativo existente — Suitelet é o entrypoint padrão para isso.
     já possuem vínculo registrado em `customrecord_pd_irl_rma_link` (ver regra de negócio 1 abaixo).
   - campo **Location** — desabilitado/somente leitura na tela, preenchido automaticamente pelo
     Client Script (EP3) assim que o usuário seleciona o RMA.
+  - campo **Bill Of Lading** (texto livre, nativo de `inboundshipment`) — editável, opcional, igual
+    ao comportamento da tela nativa de criação de Inbound Shipment.
+  - campo **Expected Shipping Date** (data, nativo de `inboundshipment`) — editável, opcional.
+  - campo **Expected Delivery Date** (data, nativo de `inboundshipment`) — editável, opcional.
+  - campo **Memo** (texto livre, nativo de `inboundshipment`) — editável, opcional.
 
 - **POST (salvar):**
   1. Cria o registro nativo `inboundshipment`, **sem linhas de item/PO** (gravado com
      `ignoreMandatoryFields: true` — ver decisão de arquitetura abaixo), com o campo `location`
-     preenchido com o location do RMA selecionado.
+     preenchido com o location do RMA selecionado, além dos 4 campos lidos do formulário — Bill Of
+     Lading, Expected Shipping Date, Expected Delivery Date e Memo (gravados quando preenchidos
+     pelo usuário; todos opcionais).
   2. Cria o registro de vínculo `customrecord_pd_irl_rma_link`, com `custrecord_pd_irl_rma` = RMA
      selecionado e `custrecord_pd_irl_shipment` = Inbound Shipment recém-criado.
 

@@ -13,7 +13,7 @@ define([
     '../Models/RmaLink.model',
     '../Models/TransactionChain.model',
     '../Constants/rmaLinkSublist.constants',
-    '../../pd_c_netsuite_tools/pd_cnt_common/pd-cntc-common.util',
+    '../../pd_c_netsuite_tools/pd_cnt_common/pd-cntc-common.util.js',
 ], function (log, serverWidget, ReturnAuthorizationModel, RmaLinkModel, TransactionChainModel, sublistConstants) {
 
     function execute(params) {

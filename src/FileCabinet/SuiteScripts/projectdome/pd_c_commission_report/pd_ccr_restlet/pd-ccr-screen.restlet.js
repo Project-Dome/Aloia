@@ -29,13 +29,13 @@ define(
 
         const TYPE = 'invoice';
         const FORMULA = {
-            percent: "{amount}/(({custcol_aae_purchaseorder.rate}*{custcol_aae_purchaseorder.quantity})+NVL({custcol_aae_purchaseorder.custbody_aee_freight_cost_vendor}, 0)+NVL({custcol_aae_purchaseorder.custbody_aae_hazmat_aog_other_fees}, 0)+NVL({shippingcost}, 0)+NVL({handlingcost}, 0))/100",
+            percent: "{amount}/(({custcol_aae_purchaseorder.rate}*{custcol_aae_purchaseorder.quantity})+NVL({custcol_aae_purchaseorder.custbody_aee_freight_cost_vendor}, 0)+NVL({custcol_aae_purchaseorder.custbody_aae_hazmat_aog_other_fees}, 0))/100",
             stockAloia: "NVL({item.quantityavailable}, 0)",
-            totalCostUSD: "({custcol_aae_purchaseorder.rate}*{custcol_aae_purchaseorder.quantity})+NVL({custcol_aae_purchaseorder.custbody_aee_freight_cost_vendor}, 0)+NVL({custcol_aae_purchaseorder.custbody_aae_hazmat_aog_other_fees}, 0)+NVL({shippingcost}, 0)+NVL({handlingcost}, 0)",
-            costEAUSD: "(   ({custcol_aae_purchaseorder.rate} * {custcol_aae_purchaseorder.quantity})   + NVL({custcol_aae_purchaseorder.custbody_aee_freight_cost_vendor}, 0)   + NVL({custcol_aae_purchaseorder.custbody_aae_hazmat_aog_other_fees}, 0)   + NVL({shippingcost}, 0)   + NVL({handlingcost}, 0) ) / NULLIF({quantity}, 0)",
-            operationalProfitUSD: "{amount}-(({custcol_aae_purchaseorder.rate}*{custcol_aae_purchaseorder.quantity})+NVL({custcol_aae_purchaseorder.custbody_aee_freight_cost_vendor}, 0)+NVL({custcol_aae_purchaseorder.custbody_aae_hazmat_aog_other_fees}, 0)+NVL({shippingcost}, 0)+NVL({handlingcost}, 0))",
+            totalCostUSD: "({custcol_aae_purchaseorder.rate}*{custcol_aae_purchaseorder.quantity})+NVL({custcol_aae_purchaseorder.custbody_aee_freight_cost_vendor}, 0)+NVL({custcol_aae_purchaseorder.custbody_aae_hazmat_aog_other_fees}, 0)",
+            costEAUSD: "(   ({custcol_aae_purchaseorder.rate} * {custcol_aae_purchaseorder.quantity})   + NVL({custcol_aae_purchaseorder.custbody_aee_freight_cost_vendor}, 0)   + NVL({custcol_aae_purchaseorder.custbody_aae_hazmat_aog_other_fees}, 0) ) / NULLIF({quantity}, 0)",
+            operationalProfitUSD: "{amount}-(({custcol_aae_purchaseorder.rate}*{custcol_aae_purchaseorder.quantity})+NVL({custcol_aae_purchaseorder.custbody_aee_freight_cost_vendor}, 0)+NVL({custcol_aae_purchaseorder.custbody_aae_hazmat_aog_other_fees}, 0))",
             salesCommission: "{applyingtransaction.trandate}+60",
-            usdCommission: "({amount}- (({custcol_aae_purchaseorder.rate} * {custcol_aae_purchaseorder.quantity}) + NVL({custcol_aae_purchaseorder.custbody_aee_freight_cost_vendor}, 0) + NVL({custcol_aae_purchaseorder.custbody_aae_hazmat_aog_other_fees}, 0) + NVL({shippingcost}, 0)+NVL({handlingcost}, 0))) * (NVL(TO_NUMBER(REPLACE({customer.custentity_aae_comission_rates}, '%', '')), 0) / 100)"
+            usdCommission: "({amount}- (({custcol_aae_purchaseorder.rate} * {custcol_aae_purchaseorder.quantity}) + NVL({custcol_aae_purchaseorder.custbody_aee_freight_cost_vendor}, 0) + NVL({custcol_aae_purchaseorder.custbody_aae_hazmat_aog_other_fees}, 0))) * (CASE WHEN NVL({custbody_aae_customer_comission_rate}, 0) > 1 THEN {custbody_aae_customer_comission_rate} / 100 ELSE NVL({custbody_aae_customer_comission_rate}, 0) END)"
         };
 
         const FIELDS = {
@@ -72,6 +72,7 @@ define(
             salesCommission: { name: "formuladate", formula: FORMULA.salesCommission },
             commission: { name: "salesrep" },
             customerCommissionPercent: { name: "custentity_aae_comission_rates", join: "customer" },
+            appliedCommissionRate: { name: "custbody_aae_customer_comission_rate", type: "percent" },
             usdCommission: { name: "formulacurrency", formula: FORMULA.usdCommission },
             type: { name: "type", onlyFilter: true },
             mainLine: { name: "mainline", onlyFilter: true },

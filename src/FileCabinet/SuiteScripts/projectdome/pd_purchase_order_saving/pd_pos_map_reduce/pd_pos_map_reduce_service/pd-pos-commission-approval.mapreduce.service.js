@@ -46,6 +46,7 @@ define(
                 const _queryString = [
                     `SELECT
                         MAX(tl.netamount * -1) as invoiceAmount,
+                        MAX(ABS(tl.quantity)) as invoiceQty,
                         MAX(e.custentity_aae_comission_rates) as commissionRate,
                         tl.custcol_aae_purchaseorder as purchaseOrderId,
                         transaction.id as invoiceId,
@@ -65,10 +66,15 @@ define(
                         AND vendorBillLine.custcol_pd_cso_line_reference = tl.custcol_pd_cso_line_reference
                         INNER JOIN transaction as vendorbill on vendorbill.id = vendorBillLine.transaction
                         AND vendorbill.recordtype = 'vendorbill'
-                        LEFT JOIN customrecord_pd_pos_approval_saving AS aps ON aps.custrecord_pd_pos_pas_transaction = vendorBillLine.transaction  
-                        AND aps.custrecord_pd_pos_pas_employee = tl.custcol_aae_buyer_purchase_order
+                        LEFT JOIN customrecord_pd_pos_approval_saving AS aps ON aps.custrecord_pd_pos_pas_invoice = transaction.id
+                        AND aps.custrecord_pd_pos_pas_line_reference = tl.custcol_pd_cso_line_reference
                     WHERE
-                        transaction.status = 'B'
+                        transaction.status IN ('B', 'CustInvc:B')
+                        AND NOT EXISTS (
+                            SELECT 1 FROM NextTransactionLink AS ntl
+                            INNER JOIN transaction AS cm ON cm.id = ntl.nextdoc
+                            WHERE ntl.previousdoc = transaction.id AND cm.recordtype = 'creditmemo'
+                        )
                         AND transaction.recordtype = 'invoice'
                         AND aps.id IS NULL
                     GROUP BY
@@ -97,7 +103,7 @@ define(
                 log.audit({ title: 'Key', details: `${_optionsData.invoiceid}&&${_optionsData.buyer}` });
 
                 context.write({
-                    key: `${_optionsData.invoiceid}&&${_optionsData.buyer}`,
+                    key: `${_optionsData.invoiceid}&&${_optionsData.vendorbillid}&&${_optionsData.linereference}`,
                     value: _optionsData
                 });
             } catch (exception) {
@@ -105,86 +111,63 @@ define(
             };
         };
 
+        // Uma execução por invoice x Vendor Bill x linha. Saving proporcional à quantidade vendida
+        // (Política de Saving, Regra 5), limitado ao que ainda resta da linha da Vendor Bill.
         function reduce(context) {
             try {
-                let _commissionValue = 0;
-                let _saleValue = 0;
-                let _purchaseValue = 0;
-                let _finalProfit = 0;
+                const data = JSON.parse(context.values[0]);
+                log.audit({ title: 'Data reduce', details: data });
 
-                let _invoiceData = JSON.parse(context.values[0]);
+                const line = (vendor_bill_service.getLinesByTransactionIds(data.vendorbillid) || [])
+                    .find(l => l.buyer == data.buyer && l.lineReference == data.linereference);
 
-                log.audit({ title: "_invoiceData", details: _invoiceData });
+                if (!line) {
+                    log.audit({ title: 'Vendor bill line not found', details: data });
+                    return;
+                }
 
-                context.values.forEach(commissionApprovalData => {
-                    const _optionsData = JSON.parse(commissionApprovalData);
-                    log.audit({ title: 'Data reduce', details: _optionsData });
+                const used = query.runSuiteQL({
+                    query: `SELECT NVL(SUM(custrecord_pd_pos_pas_quantity), 0) AS used
+                            FROM customrecord_pd_pos_approval_saving
+                            WHERE custrecord_pd_pos_pas_transaction = ?
+                            AND custrecord_pd_pos_pas_line_reference = ?`,
+                    params: [data.vendorbillid, data.linereference]
+                }).asMappedResults()[0].used;
 
-                    const vendorBillLines = vendor_bill_service.getLinesByTransactionIds(_optionsData.vendorbillid);
-                    log.audit({ title: 'vendorBillLines', details: vendorBillLines });
+                const available = parseFloat(line.baseQuantity || 0) - parseFloat(used || 0);
+                const qty = Math.min(parseFloat(data.invoiceqty || 0), available);
 
-                    const totalList = mapTotal(vendorBillLines, _optionsData);
+                if (!(qty > 0)) {
+                    log.audit({ title: 'Vendor bill line fully consumed', details: { data: data, used: used } });
+                    return;
+                }
 
-                    _saleValue += _optionsData.invoiceamount;
-                    _commissionValue += totalList.commissionValue;
-                    _purchaseValue += totalList.purchaseValue;
-
-                    log.audit({ title: '_commissionValue for each', details: totalList });
-                });
-
-                _finalProfit = _saleValue - _purchaseValue
-
-                log.audit({
-                    title: '_commissionValue',
-                    details: {
-                        transaction: _invoiceData.vendorbillid,
-                        status: _commissionValue > 0 ? status_commission_service.STATUS_COMMISSION.PENDING : status_commission_service.STATUS_COMMISSION.APPROVED,
-                        amountValue: _commissionValue > 0 ? _commissionValue : 0,
-                        buyer: _invoiceData.buyer,
-                        saleValue: _saleValue,
-                        finalProfit: _finalProfit,
-                        purchaseValue: _purchaseValue,
-                        buyerCommission: _invoiceData.commissionrate
-                    }
-                });
+                const saving = parseFloat(line.savingPerBaseUnit || 0) * qty;
+                const commission = saving > 0 ? saving * 0.10 : 0; // Regras 2 e 4: 10% fixo, negativo vira zero
+                const purchaseValue = parseFloat(line.purchasePerBaseUnit || 0) * qty;
+                const saleValue = parseFloat(data.invoiceamount || 0);
 
                 const approvalCommissionRecord = commission_approval_service.create();
                 commission_approval_service.set({
                     record: approvalCommissionRecord,
                     data: {
-                        transaction: _invoiceData.vendorbillid,
-                        status: _commissionValue > 0 ? status_commission_service.STATUS_COMMISSION.PENDING : status_commission_service.STATUS_COMMISSION.APPROVED,
-                        amountValue: _commissionValue > 0 ? _commissionValue : 0,
-                        buyer: _invoiceData.buyer,
-                        saleValue: _saleValue,
-                        finalProfit: _finalProfit,
-                        purchaseValue: _purchaseValue,
-                        buyerCommission: _invoiceData.commissionrate
+                        transaction: data.vendorbillid,
+                        invoice: data.invoiceid,
+                        lineReference: data.linereference,
+                        quantity: qty,
+                        status: commission > 0 ? status_commission_service.STATUS_COMMISSION.PENDING : status_commission_service.STATUS_COMMISSION.APPROVED,
+                        amountValue: commission,
+                        buyer: data.buyer,
+                        saleValue: saleValue,
+                        purchaseValue: purchaseValue,
+                        finalProfit: saleValue - purchaseValue,
+                        buyerCommission: data.commissionrate
                     }
                 });
                 commission_approval_service.save(approvalCommissionRecord);
             } catch (e) {
                 log.error('Exceptions reduce', e);
             }
-        }
-
-        function mapTotal(vendorBillLines, invoiceData) {
-            const filteredLines = vendorBillLines.filter(({ buyer, lineReference }) =>
-                invoiceData.buyer == buyer && invoiceData.linereference == lineReference
-            );
-
-            let commissionValue = 0;
-            let purchaseValue = 0;
-
-            filteredLines.forEach(function (lineData) {
-                commissionValue += parseFloat(lineData.amount || 0);
-                purchaseValue += parseFloat(lineData.total || 0);
-            });
-
-            return {
-                commissionValue: commissionValue,
-                purchaseValue: purchaseValue
-            };
         }
 
         return {

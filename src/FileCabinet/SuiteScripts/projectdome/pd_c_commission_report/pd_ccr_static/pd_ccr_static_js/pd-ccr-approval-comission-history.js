@@ -159,7 +159,7 @@ function loadPartnerTable(options) {
                 <td>${first.paidByCustomerOn}</td>
                 <td>${first.salesCommission}</td>
                 <td>${first.commission}</td>
-                <td>${first.customerCommissionPercent}%</td>
+                <td>${first.appliedCommissionRate}%</td>
                 <td>${first.usdCommission}</td>
             </tr>
         `;
@@ -210,7 +210,7 @@ function loadPartnerTable(options) {
                     <td>${line.paidByCustomerOn}</td>
                     <td>${line.salesCommission}</td>
                     <td>${line.commission}</td>
-                    <td>${line.customerCommissionPercent}%</td>
+                    <td>${line.appliedCommissionRate}%</td>
                     <td>${line.usdCommission}</td>
                 </tr>
             `;

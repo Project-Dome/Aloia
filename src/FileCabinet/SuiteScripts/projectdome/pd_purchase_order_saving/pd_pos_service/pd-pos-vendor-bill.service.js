@@ -45,6 +45,10 @@ define(
             partNumber: { name: 'custcol_pd_partnumbercustomer' },
             partNumberName: { name: 'custcol_pd_partnumbercustname' },
             lineReference: { name: 'custcol_pd_cso_line_reference' },
+            // Valores na unidade base do item (Política de Saving, Regras 5 e 6)
+            baseQuantity: { name: "formulanumeric", formula: "NVL({quantity}, 0)" },
+            savingPerBaseUnit: { name: "formulanumeric", formula: "((NVL({custcol_aae_estimated_cost_po}, 0) - NVL(({rate}*{quantity})/{quantityuom}, 0)) * NVL({quantityuom}, 0)) / NULLIF({quantity}, 0)" },
+            purchasePerBaseUnit: { name: "formulanumeric", formula: "{amount} / NULLIF({quantity}, 0)" },
             buyer: { name: 'custcol_aae_buyer_purchase_order' },
             perUnit: { name: "formulanumeric", formula: "{custcol_aae_estimated_cost_po}-(ROUND(({rate}*{quantity})/{quantityuom}, 2))" },
             total: { name: "formulanumeric", formula: "(NVL({custcol_aae_estimated_cost_po}, 0) - NVL(({rate}*{quantity})/{quantityuom}, 0)) * NVL({quantityuom}, 0)" },

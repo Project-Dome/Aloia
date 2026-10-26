@@ -42,7 +42,12 @@ define(
                         LEFT JOIN customrecord_pd_ccr_approval_comission AS apc ON apc.custrecord_pd_ccr_transaction = invoiceLine.transaction
                     where
                         t.recordtype = 'invoice'
-                        and t.status = 'B'
+                        and t.status IN ('B', 'CustInvc:B')
+                        AND NOT EXISTS (
+                            SELECT 1 FROM NextTransactionLink AS ntl
+                            INNER JOIN transaction AS cm ON cm.id = ntl.nextdoc
+                            WHERE ntl.previousdoc = t.id AND cm.recordtype = 'creditmemo'
+                        )
                         and apc.id IS NULL`
                 ].join(' ');
 

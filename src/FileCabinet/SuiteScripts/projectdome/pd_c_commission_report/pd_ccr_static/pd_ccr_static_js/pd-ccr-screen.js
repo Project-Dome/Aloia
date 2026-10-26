@@ -87,7 +87,7 @@ function createTransactionLines(tableBody, data) {
             <td>${data?.operationalProfitUSD ? formatCurrency(data.operationalProfitUSD) : '-'}</td>
             <td>${data?.percent ? data.percent : '-'}</td>
             <td>${data?.salesCommission ? data.salesCommission : '-'}</td>
-            <td>${data?.customerCommissionPercent ? data.customerCommissionPercent : '-'}</td>
+            <td>${data?.appliedCommissionRate != null ? data.appliedCommissionRate + '%' : '-'}</td>
             <td>${data?.usdCommission ? formatCurrency(data.usdCommission) : parseFloat(0)}</td>
         </tr>`
     );

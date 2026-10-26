@@ -1,0 +1,3 @@
+[submodule "src/FileCabinet/SuiteScripts/project_dome/pd_c_netsuite_tools"]
+	path = src/FileCabinet/SuiteScripts/project_dome/pd_c_netsuite_tools
+	url = https://github.com/Project-Dome/pd-c-netsuite-tools

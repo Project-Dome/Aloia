@@ -347,9 +347,11 @@ define([
 
                     const inventoryData = getInventoryData(index, newRecord);
                     if (inventoryData) {
+                        const inventoryLabel = itemRecordType === "serializedinventoryitem" ? "SERIAL" : "BATCH/LOT";
                         inventoryData.forEach(lot => {
                             itemLine["quantity"] = Number(lot.quantity) * conversionFactor;
                             itemLine["totalAmount"] = Number(lot.quantity) * Number(unitPrice);
+                            itemLine["inventoryLabel"] = inventoryLabel;
 
                             // Manufacturer and its address are lot-specific: prefer the lot's
                             // own values over the line-level ones so lines with mixed-manufacturer

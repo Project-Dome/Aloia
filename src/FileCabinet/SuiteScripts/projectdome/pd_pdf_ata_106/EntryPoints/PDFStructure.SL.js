@@ -3,8 +3,8 @@
  * @NScriptType Suitelet
  * Author: Lucas Monaco (+ ajustes de segmentação)
  */
-define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/search'],
-    function (record, log, render, format, file, runtime, search) {
+define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/search', 'N/query', 'N/url'],
+    function (record, log, render, format, file, runtime, search, query, nsUrl) {
 
         // Campo de fornecedor em linha
         var COL_VENDOR_ON_LINE = 'custcol_aae_vendor_purchase_order';
@@ -15,32 +15,111 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
         var GROUP_NEW = 'new';      // somente ID interno = '1'
         var GROUP_OTHERS = 'others';  // IDs 2..5 (New Surplus, Used, Repaired, Overhauled)
 
-        function getImageUrl(fileId) {
+        var SYSTEM_NOTE_TYPE_CREATE = '1';
+
+        // Fonte manuscrita (TTF/OTF no File Cabinet, marcada como "Available Without Login").
+        // Se o arquivo não existir, cai no fallback Times italic.
+        var SIGNATURE_FONT_PATH = 'SuiteScripts/projectdome/pd_pdf_ata_106/Fonts/GreatVibes-Regular.ttf';
+        var NAME_PARTICLES = ['da', 'de', 'do', 'das', 'dos', 'e', 'di', 'du', 'del', 'van', 'von'];
+        var SIGNATURE_COLOR = '#1a44a8';
+
+        // Retorna o criador da transação (SystemNote "Create") + nome de exibição.
+        // BUILTIN.DF evita depender de permissão no registro Employee.
+        function getRecordCreator(recordId) {
+            log.debug({title: 'getRecordCreator CALLED', details: {recordId: recordId}});
+            if (!recordId) return null;
             try {
-                var fileObj = file.load({id: fileId});
-                var url = fileObj.url || '';
-                return url.replace(/&/g, '&amp;');
+                var sql = "SELECT SystemNote.Name AS employeeid, BUILTIN.DF(SystemNote.Name) AS creatorname, " +
+                    "SystemNote.Type AS notetype, SystemNote.Date AS notedate FROM SystemNote " +
+                    "WHERE SystemNote.RecordID = ? AND SystemNote.RecordTypeID = -30 " +
+                    "ORDER BY SystemNote.Date ASC";
+
+                var results = query.runSuiteQL({query: sql, params: [recordId]}).asMappedResults();
+                if (!results || !results.length) return null;
+
+                var chosen = null;
+                for (var i = 0; i < results.length; i++) {
+                    if (String(results[i].notetype) === SYSTEM_NOTE_TYPE_CREATE) {
+                        chosen = results[i];
+                        break;
+                    }
+                }
+                // Fallback: sem linha "Create" explícita — usa a nota mais antiga.
+                if (!chosen) chosen = results[0];
+
+                var creator = {id: chosen.employeeid, displayName: chosen.creatorname || ''};
+                log.debug({title: 'SystemNote Chosen Creator', details: {recordId: recordId, creator: creator}});
+                return creator;
             } catch (e) {
-                log.error('Erro ao carregar arquivo', e);
+                log.error('Erro ao buscar criador via SystemNote', e);
+                return null;
+            }
+        }
+
+        // "Nome + último sobrenome", ignorando partículas (da, de, dos...).
+        function formatSignatureName(first, last, fallback) {
+            function clean(s) {
+                return String(s || '').replace(/\s+/g, ' ').trim().split(' ').filter(function (p) {
+                    return p && NAME_PARTICLES.indexOf(p.toLowerCase()) === -1;
+                });
+            }
+            var firstParts = clean(first);
+            var lastParts = clean(last);
+            if (!firstParts.length) {
+                var all = clean(fallback);
+                firstParts = all.slice(0, 1);
+                lastParts = all.slice(1);
+            }
+            var out = [];
+            if (firstParts.length) out.push(firstParts[0]);
+            if (lastParts.length) out.push(lastParts[lastParts.length - 1]);
+            return out.join(' ');
+        }
+
+        function readSignerName(userId, fallbackDisplayName) {
+            var first = '', last = '', display = fallbackDisplayName || '';
+            try {
+                var r = query.runSuiteQL({
+                    query: 'SELECT firstname, lastname, entityid FROM employee WHERE id = ?',
+                    params: [userId]
+                }).asMappedResults()[0];
+                if (r) {
+                    first = r.firstname || '';
+                    last = r.lastname || '';
+                    display = display || r.entityid || '';
+                }
+            } catch (e) {
+                // Sem permissão no Employee: segue com o nome de exibição do SystemNote.
+                log.audit('readSignerName - usando fallback do SystemNote', e.message);
+            }
+            var name = formatSignatureName(first, last, display);
+            log.debug({title: 'readSignerName RESULT', details: {userId: userId, name: name}});
+            return name;
+        }
+
+        function getSignatureFontLink() {
+            try {
+                var f = file.load({id: SIGNATURE_FONT_PATH});
+                if (!f.url) return '';
+                if (!f.isOnline) log.audit('Fonte sem "Available Without Login" — o BFO pode não conseguir baixar', SIGNATURE_FONT_PATH);
+                // O BFO baixa a fonte via HTTP: precisa de URL absoluta (a relativa cai no fallback silenciosamente)
+                var domain = nsUrl.resolveDomain({hostType: nsUrl.HostType.APPLICATION});
+                var fontUrl = ('https://' + domain + f.url).replace(/&/g, '&amp;');
+                log.debug('Signature font URL', fontUrl);
+                return '<link name="SignatureFont" type="font" subtype="truetype" src="' + fontUrl +
+                    '" src-bold="' + fontUrl + '" bytes="2" />';
+            } catch (e) {
+                log.audit('Fonte de assinatura não encontrada, usando fallback', e.message);
                 return '';
             }
         }
 
-        function readEmployeeSignatureAndName(userId) {
-            var sigUrl = '';
-            var empName = '';
-            try {
-                var emp = record.load({type: record.Type.EMPLOYEE, id: userId});
-                var signatureFileId = emp.getValue({fieldId: 'custentity_pd_aae_signature'});
-                sigUrl = signatureFileId ? getImageUrl(signatureFileId) : '';
-                var first = emp.getValue({fieldId: 'firstname'}) || '';
-                var mid = emp.getValue({fieldId: 'middlename'}) || '';
-                var last = emp.getValue({fieldId: 'lastname'}) || '';
-                empName = (first + ' ' + mid + ' ' + last).replace(/\s+/g, ' ').trim();
-            } catch (e) {
-                log.error('Erro employee', e);
-            }
-            return {signatureUrl: sigUrl, employeeName: empName};
+        function buildSignatureHtml(name, fontLink) {
+            var style = fontLink
+                ? 'font-family: SignatureFont; font-size: 22pt;'
+                : 'font-family: Times; font-style: italic; font-size: 16pt;';
+                style += ' color: ' + SIGNATURE_COLOR + ';';
+            return '<span style="' + style + '">' + escapeXml(name) + '</span>';
         }
 
         function getVendorName(vendorId) {
@@ -310,9 +389,17 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
             var subs = getSubsidiaryData(subsidiaryId);
             var ack = getAckFromCreatedFrom(invoice);
 
-            var userData = readEmployeeSignatureAndName(runtime.getCurrentUser().id);
-            var signatureUrl = userData.signatureUrl;
-            var employeeName = userData.employeeName;
+            // Assinador = criador da transação (SystemNote). Não depende de quem gera o PDF.
+            var creator = getRecordCreator(invoice.id);
+            var creatorId = (creator && creator.id) || runtime.getCurrentUser().id;
+            var fallbackName = creator ? creator.displayName : runtime.getCurrentUser().name;
+            var employeeName = readSignerName(creatorId, fallbackName);
+            var hasSigner = !!employeeName;
+            var signatureFontLink = getSignatureFontLink();
+            log.debug({
+                title: 'renderPdf - assinador resolvido',
+                details: {invoiceId: invoice.id, creatorId: creatorId, employeeName: employeeName, customFont: !!signatureFontLink}
+            });
 
             // Linhas do grupo atual (vendor + status)
             var rows = collectLines(invoice, vendorIdFilter, groupFilter);
@@ -324,41 +411,41 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
             var showPart15 = (groupFilter === GROUP_NEW) && rows.length > 0; // 15/16/17
             var showPart19 = (groupFilter === GROUP_OTHERS) && rows.length > 0; // 19/20/21
 
-            var trPartsNameDate = (!signatureUrl || !showPart15) ? '<tr style="background-color: #d3d3d3; padding: 0;">' : '<tr style="padding: 0;">';
-            var trPartsNameDate2 = (!signatureUrl || !showPart19) ? '<tr style="background-color: #d3d3d3; padding: 0;">' : '<tr style="padding: 0;">';
+            var trPartsNameDate = (!hasSigner || !showPart15) ? '<tr style="background-color: #d3d3d3; padding: 0;">' : '<tr style="padding: 0;">';
+            var trPartsNameDate2 = (!hasSigner || !showPart19) ? '<tr style="background-color: #d3d3d3; padding: 0;">' : '<tr style="padding: 0;">';
 
-            var tdPartsNameDate = (!signatureUrl || !showPart15) ? '<td colspan="1" style="border: 1px solid black; padding: 0;background-color: #d3d3d3;">'
+            var tdPartsNameDate = (!hasSigner || !showPart15) ? '<td colspan="1" style="border: 1px solid black; padding: 0;background-color: #d3d3d3;">'
                 : '<td colspan="1" style="border: 1px solid black; padding: 0;">';
-            var tdPartsNameDate2 = (!signatureUrl || !showPart19) ? '<td colspan="1" style="border: 1px solid black; padding: 0;background-color: #d3d3d3;">'
+            var tdPartsNameDate2 = (!hasSigner || !showPart19) ? '<td colspan="1" style="border: 1px solid black; padding: 0;background-color: #d3d3d3;">'
                 : '<td colspan="1" style="border: 1px solid black; padding: 0;">';
 
-            var correctSideName = (showPart15 && signatureUrl)
+            var correctSideName = (showPart15 && hasSigner)
                 ? '<td style="border: none; padding: 4px; width: 56%;">16. Name: <br/>' + escapeXml(employeeName) + '</td>'
                 : '<td style="border: none; padding: 4px; width: 56%;">16. Name: <br/></td>';
 
-            var correctSideDate = (showPart15 && signatureUrl)
+            var correctSideDate = (showPart15 && hasSigner)
                 ? '<td style="border: none; padding: 4px; width: 40%; text-align: right;">17. Date: <br/>' + escapeXml(dateStr) + '</td>'
                 : '<td style="border: none; padding: 4px; width: 40%; text-align: right;">17. Date: <br/></td>';
 
-            var correctSideName2 = (showPart19 && signatureUrl)
+            var correctSideName2 = (showPart19 && hasSigner)
                 ? '<td style="border: none; padding: 4px; width: 56%;">20. Name: <br/>' + escapeXml(employeeName) + '</td>'
                 : '<td style="border: none; padding: 4px; width: 56%;">20. Name: <br/></td>';
 
-            var correctSideDate2 = (showPart19 && signatureUrl)
+            var correctSideDate2 = (showPart19 && hasSigner)
                 ? '<td style="border: none; padding: 4px; width: 40%; text-align: right;">21. Date: <br/>' + escapeXml(dateStr) + '</td>'
                 : '<td style="border: none; padding: 4px; width: 40%; text-align: right;">21. Date: <br/></td>';
 
-            var tdNoSignature = (!signatureUrl || !showPart15)
+            var tdNoSignature = (!hasSigner || !showPart15)
                 ? '<td colspan="1" style=" background-color: #d3d3d3; border: 1px solid black; padding: 0; vertical-align: top;">'
                 : '<td colspan="1" style="border: 1px solid black; padding: 0; vertical-align: top;">';
 
-            var tdNoSignatureUsed = (!signatureUrl || !showPart19)
+            var tdNoSignatureUsed = (!hasSigner || !showPart19)
                 ? '<td colspan="1" style=" background-color: #d3d3d3; border: 1px solid black; padding: 0; vertical-align: top;">'
                 : '<td colspan="1" style="border: 1px solid black; padding: 0; vertical-align: top;">';
 
             var noSignature = "<div style='background-color:#d3d3d3; width: 100%; height: 30px; padding: 0; margin: 0; border: none;'>&nbsp;</div>";
-            var newPartsSignature = (showPart15 && signatureUrl) ? ('<img src="' + signatureUrl + '" style="width: 200px; height: 40px; object-fit: contain; margin-top: 4px;"/>') : noSignature;
-            var usedPartsSignature = (showPart19 && signatureUrl) ? ('<img src="' + signatureUrl + '" style="width: 200px; height: 40px; margin-top: 4px;"/>') : noSignature;
+            var newPartsSignature = (showPart15 && hasSigner) ? buildSignatureHtml(employeeName, signatureFontLink) : noSignature;
+            var usedPartsSignature = (showPart19 && hasSigner) ? buildSignatureHtml(employeeName, signatureFontLink) : noSignature;
 
             var itemRowsXml = buildItemRowsXml(rows);
 
@@ -366,6 +453,7 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
                 '<?xml version="1.0"?>' +
                 '<!DOCTYPE pdf PUBLIC "-//big.faceless.org//report" "report-1.1.dtd">' +
                 '<pdf><head>' +
+                signatureFontLink +
                 '  <style type="text/css">' +
                 '    body { font-family: Arial, sans-serif; font-size: 10pt; margin: 20px; }' +
                 '    table { width: 100%; border-collapse: collapse; margin-bottom: 5px; }' +

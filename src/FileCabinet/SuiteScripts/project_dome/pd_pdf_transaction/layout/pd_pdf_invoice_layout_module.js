@@ -27,6 +27,7 @@ define([
             <pdf>
             
                 <head>
+                    ${parameters.signatureFontLink || ""}
                     <style>
        
                         body {
@@ -816,12 +817,14 @@ define([
             return dynamicHtml;
         }
 
+        // Assinatura em texto (nome + último sobrenome do criador) — sem imagem PNG.
         function createDynamicSing(parameters) {
-            if (parameters.signature) {
-                return '<img class="sign-img" src="' + formatUrlForXml(parameters.signature) + '" alt="Signature"/>';
-            } else {
-                return '<span>    </span>';
-            }
+            if (!parameters.signatureName) return '<span>    </span>';
+            const style = parameters.signatureFontLink
+                ? 'font-family: SignatureFont; font-size: 16pt;'
+                : 'font-family: Times; font-style: italic; font-size: 12pt;';
+            return '<span style="' + style + ' color: ' + (parameters.signatureColor || '#1a44a8') + ';">'
+                + escapeXml(parameters.signatureName) + '</span>';
         }
 
         function getShipViaStyle(value) {

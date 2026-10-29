@@ -6,6 +6,11 @@ define([],
     () => {
 
         return {
+            SIGNATURE: {
+                // Mesma fonte usada no ATA-106 / COFC
+                FONT_PATH: "SuiteScripts/projectdome/pd_pdf_ata_106/Fonts/GreatVibes-Regular.ttf",
+                COLOR: "#1a44a8"
+            },
             CUSTOM_FIELDS: {
                 TRANSACTIONS: {
                     BODY_FIELDS: {

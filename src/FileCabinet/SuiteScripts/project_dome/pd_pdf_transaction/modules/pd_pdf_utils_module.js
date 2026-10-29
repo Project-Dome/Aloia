@@ -3,13 +3,34 @@
  */
 define([
         "N/format",
+        "N/file",
+        "N/url",
         "./pd_pdf_search_module",
         "./pd_pdf_const_module"
     ],
 
-    (format, searchModule, cts) => {
+    (format, file, nsUrl, searchModule, cts) => {
 
         const handler = {}
+
+        /**
+         * <link> da fonte manuscrita para o BFO. O arquivo precisa estar com
+         * "Available Without Login" e a URL tem que ser absoluta. Sem a fonte,
+         * a assinatura cai no fallback Times italic.
+         */
+        const getSignatureFontLink = () => {
+            try {
+                const f = file.load({id: cts.SIGNATURE.FONT_PATH});
+                if (!f.url) return "";
+                if (!f.isOnline) log.audit({title: "Fonte sem Available Without Login", details: cts.SIGNATURE.FONT_PATH});
+                const domain = nsUrl.resolveDomain({hostType: nsUrl.HostType.APPLICATION});
+                const fontUrl = ("https://" + domain + f.url).replace(/&/g, "&amp;");
+                return `<link name="SignatureFont" type="font" subtype="truetype" src="${fontUrl}" src-bold="${fontUrl}" bytes="2" />`;
+            } catch (e) {
+                log.audit({title: "Fonte de assinatura não encontrada, usando fallback", details: e.message});
+                return "";
+            }
+        }
 
         handler.manipulateInvoicePdf = (newRecord) => {
 
@@ -57,14 +78,22 @@ define([
                     fieldId: "custbody_aae_cust_po_receipt"
                 });
 
-                const employeeId = newRecord.getValue({
+                // Prepared By / Assinatura = criador real da Invoice (SystemNote "Create").
+                // custbody_created_by é herdado da Estimate/SO no Transform — fica só como fallback.
+                const creator = searchModule.getRecordCreator(newRecord.id);
+                const employeeId = (creator && creator.id) || newRecord.getValue({
                     fieldId: "custbody_created_by"
                 });
 
                 if (employeeId) {
-                    const {entityid, signatureId} = searchModule.getEmployeeLookup(employeeId);
-                    PDFParameters["signature"] = signatureId;
-                    PDFParameters["recordcreatedby"] = entityid;
+                    const {fullName, signatureName} = searchModule.getSignerData(
+                        employeeId,
+                        creator ? creator.displayName : newRecord.getText({fieldId: "custbody_created_by"})
+                    );
+                    PDFParameters["recordcreatedby"] = fullName;
+                    PDFParameters["signatureName"] = signatureName;
+                    PDFParameters["signatureColor"] = cts.SIGNATURE.COLOR;
+                    PDFParameters["signatureFontLink"] = signatureName ? getSignatureFontLink() : "";
                 }
 
                 const customerId = newRecord.getValue({

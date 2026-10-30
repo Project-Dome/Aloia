@@ -173,6 +173,17 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
             }
         }
 
+        // Mesmo critério usado no invoice/packing list (DEV-867): item serializado exibe
+        // "SERIAL", item por lote exibe "BATCH/LOT".
+        function getItemRecordType(itemId) {
+            if (!itemId) return null;
+            return search.lookupFields({
+                type: search.Type.ITEM,
+                id: itemId,
+                columns: ['recordtype']
+            })['recordtype'];
+        }
+
         /**
          * Busca, via SuiteQL, os candidatos a número de certificado nas linhas de Item Receipt
          * do MESMO item da linha da invoice. O certificado é uma propriedade do lote recebido
@@ -462,6 +473,7 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
                 }) || '';
 
                 var itemId = invoice.getSublistValue({sublistId: 'item', fieldId: 'item', line: i}) || '';
+                var inventoryLabel = getItemRecordType(itemId) === "serializedinventoryitem" ? "SERIAL" : "BATCH/LOT";
 
                 try {
 
@@ -527,7 +539,7 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
                                     statusText: statusTxt,
                                     statusVal: statusVal,
                                     manufacturerName: manufacturerName,
-                                    serialText: serialNum,
+                                    serialText: inventoryLabel + ': ' + serialNum,
                                     lotText: "",
                                     poNumber: poNumber,
                                     certNumber: matchCertByLot(lotCandidates, serialNum, invoiceSoId)

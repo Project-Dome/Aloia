@@ -160,6 +160,17 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
             }
         }
 
+        // Mesmo critério usado no invoice/packing list (DEV-867): item serializado exibe
+        // "SERIAL", item por lote exibe "BATCH/LOT".
+        function getItemRecordType(itemId) {
+            if (!itemId) return null;
+            return search.lookupFields({
+                type: search.Type.ITEM,
+                id: itemId,
+                columns: ['recordtype']
+            })['recordtype'];
+        }
+
         // Monta o "plano" de geração: grupos por (vendorId, grupoStatus)
         function planGroups(invoice) {
             var lineCount = invoice.getLineCount({sublistId: 'item'}) || 0;
@@ -251,6 +262,9 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
                     line: i
                 })) || 1;
 
+                var itemId = invoice.getSublistValue({sublistId: 'item', fieldId: 'item', line: i}) || '';
+                var inventoryLabel = getItemRecordType(itemId) === "serializedinventoryitem" ? "SERIAL" : "BATCH/LOT";
+
                 // Seriais
                 try {
 
@@ -315,7 +329,7 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
                                         manufacturerName: manufName,
                                         partNumber: partNumber,
                                         partNumberCustomer: partNumberCustomer,
-                                        serialText: escapeXml(sn.inventorynumber)
+                                        serialText: inventoryLabel + ': ' + escapeXml(sn.inventorynumber)
                                     });
 
                                 }

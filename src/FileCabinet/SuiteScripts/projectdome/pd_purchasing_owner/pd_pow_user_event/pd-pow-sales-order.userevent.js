@@ -35,10 +35,6 @@ define([
 
             sales_order_service.assignBuyerToSO(salesOrderId);
 
-            if (type === UE.EDIT) {
-                sales_order_service.handleCreatePODecrement(context.oldRecord, context.newRecord);
-            }
-
         } catch (error) {
             log.error({
                 title: 'Erro no afterSubmit',

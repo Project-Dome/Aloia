@@ -16,19 +16,16 @@ define([
 
     function getInputData() {
         try {
-            let _resetCount = sales_order_service.resetAllBuyerCounters();
-
-            log.audit({
-                title: 'getInputData - Contadores zerados',
-                details: { buyersReset: _resetCount }
-            });
-
             let _soSearch = search.create({
                 type: search.Type.SALES_ORDER,
                 filters: [
+                    ['mainline', 'is', 'F'],
+                    'AND',
                     ['custcol_aae_purchaseorder', 'anyof', '@NONE@'],
                     'AND',
-                    ['custcol_pd_cso_dont_create_purchreq', 'is', 'F']
+                    ['custcol_pd_cso_dont_create_purchreq', 'is', 'F'],
+                    'AND',
+                    ['custcol_pd_buyer_purchorder_initial', 'anyof', '@NONE@']
                 ],
                 columns: [
                     'internalid',
@@ -60,14 +57,10 @@ define([
             return _soList;
 
         } catch (error) {
-            log.error({
-                title: 'getInputData - error',
-                details: error
-            });
+            log.error({ title: 'getInputData - error', details: error });
             return [];
         }
     }
-
 
     function map(context) {
         try {
@@ -82,13 +75,9 @@ define([
             });
 
         } catch (error) {
-            log.error({
-                title: 'map - error',
-                details: error
-            });
+            log.error({ title: 'map - error', details: error });
         }
     }
-
 
     function summarize(summary) {
         try {
@@ -110,10 +99,7 @@ define([
             }
 
         } catch (error) {
-            log.error({
-                title: 'summarize - error',
-                details: error
-            });
+            log.error({ title: 'summarize - error', details: error });
         }
     }
 

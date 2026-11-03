@@ -1,0 +1,25 @@
+<suitelet scriptid="customscript_pd_pdf_print_credit_memo_sl">
+  <description></description>
+  <isinactive>F</isinactive>
+  <name>PD | PDF | Print Credit Memo SL</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <notifyuser>F</notifyuser>
+  <scriptfile>[/SuiteScripts/project_dome/pd_pdf_transaction/credit_memo/suitelet/pd_pdf_credit_memo_sl.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_pd_pdf_print_credit_memo_sl">
+      <allemployees>F</allemployees>
+      <allpartners>F</allpartners>
+      <allroles>T</allroles>
+      <audslctrole>CUSTOMER_CENTER|EMPLOYEE_CENTER|NETSUITE_SUPPORT_CENTER__BASIC|NETSUITE_SUPPORT_CENTER|ONLINE_FORM_USER|PARTNER_CENTER|VENDOR_CENTER</audslctrole>
+      <eventtype></eventtype>
+      <isdeployed>T</isdeployed>
+      <isonline>T</isonline>
+      <loglevel>DEBUG</loglevel>
+      <runasrole>ADMINISTRATOR</runasrole>
+      <status>RELEASED</status>
+      <title>PD | PDF | Print Credit Memo SL</title>
+    </scriptdeployment>
+  </scriptdeployments>
+</suitelet>

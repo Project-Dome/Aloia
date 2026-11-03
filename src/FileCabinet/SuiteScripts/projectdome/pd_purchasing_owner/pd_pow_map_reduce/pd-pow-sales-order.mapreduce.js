@@ -16,28 +16,59 @@ define([
 
     function getInputData() {
         try {
-            return search.create({
+            let _soSearch = search.create({
                 type: search.Type.SALES_ORDER,
+                settings: [
+                    { name: 'consolidationtype', value: 'ACCTTYPE' },
+                    { name: 'includeperiodendtransactions', value: 'F' }
+                ],
                 filters: [
-                    [
-                        ['custbody_aae_buyer', 'noneof', '@NONE@'], //^ sem buyer
-                        'OR',
-                        ['custbody_aae_buyer.custentity_pd_pow_aae_onleave', 'is', 'F'] //^ buyer em afastamento
-                    ],
+                    ['type', 'anyof', 'SalesOrd'],
                     'AND',
-                    ['mainline', 'is', 'T']
+                    ['mainline', 'is', 'F'],
+                    'AND',
+                    ['custcol_aae_purchaseorder', 'anyof', '@NONE@'],
+                    'AND',
+                    ['custcol_pd_cso_dont_create_purchreq', 'is', 'F'],
+                    'AND',
+                    ['custcol_pd_buyer_purchorder_initial', 'anyof', '@NONE@']
                 ],
                 columns: [
-                    'internalid',
-                    'tranid'
+                    search.createColumn({ name: 'internalid' }),
+                    search.createColumn({ name: 'tranid' }),
+                    search.createColumn({ name: 'custcol_pd_cso_line_reference' })
                 ]
             });
+
+            let _soMap = {};
+            let _soList = [];
+
+            let _paged = _soSearch.runPaged({ pageSize: 1000 });
+
+            for (let p = 0; p < _paged.pageRanges.length; p++) {
+                let _page = _paged.fetch({ index: p });
+                _page.data.forEach(function (result) {
+                    let _id = result.getValue('internalid');
+                    if (!_soMap[_id]) {
+                        _soMap[_id] = true;
+                        _soList.push({ id: _id, tranid: result.getValue('tranid') });
+                    }
+                });
+            }
+
+            log.debug({
+                title: 'getInputData - SOs encontradas',
+                details: { count: _soList.length }
+            });
+
+            return _soList;
 
         } catch (error) {
             log.error({
                 title: 'getInputData - error',
                 details: error
             });
+            return [];
         }
     }
 
@@ -47,21 +78,12 @@ define([
             const result = JSON.parse(context.value);
             const soId = result.id;
 
-            const buyerId = sales_order_service.assignBuyerToSO(soId, {
-                forceRedistribution: true
-            });
+            const success = sales_order_service.assignBuyerToSO(soId);
 
-            if (buyerId) {
-                log.debug('SO atribuída', {
-                    soId: soId,
-                    buyerId: buyerId
-                });
-            } else {
-                log.debug('SO não atribuída', {
-                    soId: soId,
-                    reason: 'sem candidatos ou bloqueado'
-                });
-            }
+            log.debug({
+                title: success ? 'map - SO distribuída' : 'map - SO não distribuída',
+                details: { soId: soId, tranid: result.tranid }
+            });
 
         } catch (error) {
             log.error({

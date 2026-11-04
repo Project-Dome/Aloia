@@ -22,6 +22,8 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
         var SIGNATURE_FONT_PATH = 'SuiteScripts/projectdome/pd_pdf_ata_106/Fonts/GreatVibes-Regular.ttf';
         var NAME_PARTICLES = ['da', 'de', 'do', 'das', 'dos', 'e', 'di', 'du', 'del', 'van', 'von'];
         var SIGNATURE_COLOR = '#1a44a8';
+        // Célula da assinatura no COFC tem 30px de altura.
+        var SIGNATURE_IMG_STYLE = 'width: 150px; height: 28px;';
 
         // ---------------------------------------------------------------------------------
         // Estimativa de layout (pra esticar a moldura da tabela até o rodapé sem quebrar página).
@@ -93,25 +95,43 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
             return out.join(' ');
         }
 
-        function readSignerName(userId, fallbackDisplayName) {
-            var first = '', last = '', display = fallbackDisplayName || '';
+        // URL da imagem de assinatura (PNG no File Cabinet), já escapada para XML.
+        // Qualquer falha (arquivo apagado, sem permissão na pasta) retorna '' e cai na fonte.
+        function getSignatureImageUrl(fileId) {
+            if (!fileId) return '';
+            try {
+                var fileObj = file.load({id: fileId});
+                return (fileObj.url || '').replace(/&/g, '&amp;');
+            } catch (e) {
+                log.audit('Imagem de assinatura indisponível, usando fonte', {fileId: fileId, message: e.message});
+                return '';
+            }
+        }
+
+        // Assinador: nome (nome + último sobrenome) + URL do PNG, se o funcionário tiver um.
+        function readSigner(userId, fallbackDisplayName) {
+            var first = '', last = '', display = fallbackDisplayName || '', signatureFileId = '';
             try {
                 var r = query.runSuiteQL({
-                    query: 'SELECT firstname, lastname, entityid FROM employee WHERE id = ?',
+                    query: 'SELECT firstname, lastname, entityid, custentity_pd_aae_signature AS signaturefile FROM employee WHERE id = ?',
                     params: [userId]
                 }).asMappedResults()[0];
                 if (r) {
                     first = r.firstname || '';
                     last = r.lastname || '';
                     display = display || r.entityid || '';
+                    signatureFileId = r.signaturefile || '';
                 }
             } catch (e) {
-                // Sem permissão no Employee: segue com o nome de exibição do SystemNote.
-                log.audit('readSignerName - usando fallback do SystemNote', e.message);
+                // Sem permissão no Employee: segue com o nome de exibição do SystemNote (sem PNG).
+                log.audit('readSigner - usando fallback do SystemNote', e.message);
             }
-            var name = formatSignatureName(first, last, display);
-            log.debug({title: 'readSignerName RESULT', details: {userId: userId, name: name}});
-            return name;
+            var signer = {
+                name: formatSignatureName(first, last, display),
+                imageUrl: getSignatureImageUrl(signatureFileId)
+            };
+            log.debug({title: 'readSigner RESULT', details: {userId: userId, signatureFileId: signatureFileId, signer: signer}});
+            return signer;
         }
 
         function getSignatureFontLink() {
@@ -131,7 +151,11 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
             }
         }
 
-        function buildSignatureHtml(name, fontLink) {
+        // PNG do funcionário se existir; senão, assinatura gerada com a fonte manuscrita.
+        function buildSignatureHtml(name, imageUrl, fontLink, imgStyle) {
+            if (imageUrl) {
+                return '<img src="' + imageUrl + '" style="' + imgStyle + '"/>';
+            }
             var style = fontLink
                 ? 'font-family: SignatureFont; font-size: 22pt;'
                 : 'font-family: Times; font-style: italic; font-size: 16pt;';
@@ -656,12 +680,15 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
             var creator = getRecordCreator(invoice.id);
             var creatorId = (creator && creator.id) || runtime.getCurrentUser().id;
             var fallbackName = creator ? creator.displayName : runtime.getCurrentUser().name;
-            var employeeName = readSignerName(creatorId, fallbackName);
-            var hasSigner = !!employeeName;
-            var signatureFontLink = getSignatureFontLink();
+            var signer = readSigner(creatorId, fallbackName);
+            var employeeName = signer.name;
+            var signatureImageUrl = signer.imageUrl;
+            var hasSigner = !!(employeeName || signatureImageUrl);
+            // A fonte só é necessária quando não há PNG.
+            var signatureFontLink = signatureImageUrl ? '' : getSignatureFontLink();
             log.debug({
                 title: 'renderPdf - assinador resolvido',
-                details: {invoiceId: invoice.id, creatorId: creatorId, employeeName: employeeName, customFont: !!signatureFontLink}
+                details: {invoiceId: invoice.id, creatorId: creatorId, employeeName: employeeName, png: !!signatureImageUrl, customFont: !!signatureFontLink}
             });
 
             // Linhas do grupo atual (vendor + status) — o certificado de cada lote é
@@ -682,7 +709,7 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
             var showSignature = hasSigner && rows.length > 0;
 
             var signatureCell = showSignature
-                ? buildSignatureHtml(employeeName, signatureFontLink)
+                ? buildSignatureHtml(employeeName, signatureImageUrl, signatureFontLink, SIGNATURE_IMG_STYLE)
                 : '';
 
             var signedNameCell = showSignature ? escapeXml(employeeName) : '';

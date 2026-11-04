@@ -32,6 +32,20 @@ define([
             }
         }
 
+        /**
+         * URL do PNG de assinatura do funcionário. Qualquer falha (arquivo apagado,
+         * sem permissão na pasta) retorna "" e o layout cai na assinatura com fonte.
+         */
+        const getSignatureImageUrl = (fileId) => {
+            if (!fileId) return "";
+            try {
+                return file.load({id: fileId}).url || "";
+            } catch (e) {
+                log.audit({title: "Imagem de assinatura indisponível, usando fonte", details: {fileId, message: e.message}});
+                return "";
+            }
+        }
+
         handler.manipulateInvoicePdf = (newRecord) => {
 
             try {
@@ -86,14 +100,17 @@ define([
                 });
 
                 if (employeeId) {
-                    const {fullName, signatureName} = searchModule.getSignerData(
+                    const {fullName, signatureName, signatureFileId} = searchModule.getSignerData(
                         employeeId,
                         creator ? creator.displayName : newRecord.getText({fieldId: "custbody_created_by"})
                     );
                     PDFParameters["recordcreatedby"] = fullName;
                     PDFParameters["signatureName"] = signatureName;
                     PDFParameters["signatureColor"] = cts.SIGNATURE.COLOR;
-                    PDFParameters["signatureFontLink"] = signatureName ? getSignatureFontLink() : "";
+                    // PNG tem prioridade; a fonte só é carregada quando não há imagem.
+                    const signatureUrl = getSignatureImageUrl(signatureFileId);
+                    PDFParameters["signature"] = signatureUrl;
+                    PDFParameters["signatureFontLink"] = (!signatureUrl && signatureName) ? getSignatureFontLink() : "";
                 }
 
                 const customerId = newRecord.getValue({

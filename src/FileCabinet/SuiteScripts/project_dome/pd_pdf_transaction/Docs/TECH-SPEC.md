@@ -63,6 +63,12 @@ origem da transação (venda direta via Invoice ou devolução via RMA).
 
 - **Título:** "Invoice" → "Credit Memo".
 - **Identificação:** label "Invoice #:" → "CM #:".
+- **Sales Order:** mesmo campo exibido no Invoice ("Sales Order:"), não listado nas remoções.
+  Fonte: `custbody_related_so`, lido diretamente do próprio Credit Memo (campo já existente no
+  ambiente, não gerenciado por este projeto SDF). Mesma lógica em ambos os `originType`s.
+- **Terms:** diferente do Invoice (que lê `terms` do próprio registro), o Credit Memo lê o Terms
+  da **Sales Order relacionada** via `custbody_related_so` — o campo `terms` do próprio Credit
+  Memo não vem populado nessa transação.
 - **Rótulo financeiro:** "Payable in" → "Credit in" (moeda continua dinâmica via `currencysymbol`,
   sem mudança na lógica).
 - **Data/hora de emissão:** `trandate`/`createddate` do próprio Credit Memo (mesma formatação
@@ -96,23 +102,34 @@ variando por `originType`):**
   ```
   This is a credit note DO NOT PAY
   Invoice {invoiceNumberFromRma} - RMA {rmaNumber}
-  Wrong Material: {returnReason}
-  Authorized Signature: SA
+  {returnReason}
+  Authorized Signature: {authorizedSignatureName}
   ```
   - `invoiceNumberFromRma` = `tranid` do Invoice de origem da RMA (`createdfrom` da própria RMA).
   - `rmaNumber` = `tranid` da Return Authorization vinculada ao Credit Memo.
   - `returnReason` = valor do campo `custbody_pd_motivo_rma_scrap` (Custom Body Field na Return
-    Authorization) — ver [MANIFEST.md](./MANIFEST.md).
-  - "This is a credit note DO NOT PAY" e "Authorized Signature: SA" são texto estático fixo — "SA"
-    são iniciais fixas, não um lookup dinâmico (confirmado pelo usuário).
+    Authorization) — ver [MANIFEST.md](./MANIFEST.md). Campo é **List/Record**: as opções incluem
+    o próprio texto "Wrong Material" como um dos valores possíveis — por isso o template exibe
+    apenas o valor selecionado, sem rótulo fixo precedendo-o (decisão revista após validação em
+    Sandbox; versão anterior deste TECH-SPEC usava "Wrong Material: {returnReason}" como rótulo
+    fixo, o que dobrava o texto quando a opção selecionada era literalmente "Wrong Material").
+  - `authorizedSignatureName` = nome completo do funcionário selecionado no campo
+    `custbody_pd_authorized_signature` (Custom Body Field no Credit Memo) — ver
+    [MANIFEST.md](./MANIFEST.md). **Revisão de decisão:** versões anteriores deste TECH-SPEC
+    tratavam "Authorized Signature: SA" como texto estático fixo (iniciais, sem lookup dinâmico).
+    Validação em Sandbox mostrou a necessidade de um lookup real ao funcionário selecionado nesse
+    campo — decisão substituída.
+  - "This is a credit note DO NOT PAY" continua texto estático fixo.
 
 - `INVOICE_DIRECT` — segue o texto literal fornecido pelo usuário:
   ```
   This is a credit note DO NOT PAY
   Invoice {invoiceNumber}
-  Authorized Signature: SA
+  Authorized Signature: {authorizedSignatureName}
   ```
   - `invoiceNumber` = `tranid` do Invoice apontado por `createdfrom` do próprio Credit Memo.
+  - `authorizedSignatureName` = mesma fonte e mesma decisão revista descritas no cenário
+    `RMA_SCRAP` acima (`custbody_pd_authorized_signature`, nome completo do funcionário).
   - Sem referência a RMA, sem linha "Wrong Material".
 
 ## Decisões de arquitetura

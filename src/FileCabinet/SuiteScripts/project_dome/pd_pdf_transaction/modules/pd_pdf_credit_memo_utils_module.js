@@ -104,11 +104,18 @@ define([
                     fieldId: "custbody_pd_customer_buyer"
                 });
 
-                PDFParameters["terms"] = creditMemoRecord.getText({
-                    fieldId: "terms"
+                PDFParameters["numberOfItens"] = itemLineCount;
+
+                // Sales Order: lido diretamente do próprio Credit Memo via custbody_related_so.
+                // Terms, diferente do Invoice, não vem do próprio registro - vem da Sales Order
+                // relacionada (o campo terms do Credit Memo não vem populado nessa transação).
+                const relatedSalesOrderId = creditMemoRecord.getValue({
+                    fieldId: cts.CUSTOM_FIELDS.TRANSACTIONS.BODY_FIELDS.RELATED_SO
                 });
 
-                PDFParameters["numberOfItens"] = itemLineCount;
+                const relatedSalesOrderData = searchModule.getSalesOrderLookup(relatedSalesOrderId) || {};
+                PDFParameters["salesOrder"] = `#${relatedSalesOrderData.tranid || ""}`;
+                PDFParameters["terms"] = relatedSalesOrderData.terms || "";
 
                 const incontermsSale = creditMemoRecord.getText({
                     fieldId: "custbody_pd_incotermssales_bodyfield"
@@ -374,11 +381,19 @@ define([
 
                 }
 
+                // Nome completo do funcionário selecionado em custbody_pd_authorized_signature -
+                // getText já retorna o nome completo de exibição (List/Record Employee), sem
+                // necessidade de lookup adicional.
+                PDFParameters["authorizedSignatureName"] = creditMemoRecord.getText({
+                    fieldId: cts.CUSTOM_FIELDS.TRANSACTIONS.BODY_FIELDS.AUTHORIZED_SIGNATURE
+                });
+
                 PDFParameters["specialInstructions"] = buildSpecialInstructions(
                     originType,
                     creditMemoRecord,
                     returnAuthorizationRecord,
-                    invoiceFromRmaRecord
+                    invoiceFromRmaRecord,
+                    PDFParameters["authorizedSignatureName"]
                 );
 
                 // Terms and Conditions: fonte única compartilhada com o Invoice - lê o parâmetro
@@ -429,18 +444,54 @@ define([
          * em arquivo do domínio do Invoice. Script parameters de deployment ficam expostos como
          * campos do próprio record "scriptdeployment", carregável pelo scriptid do deployment.
          */
+        /**
+         * Normaliza o valor lido via record.getValue() no scriptdeployment do Invoice. Esse
+         * caminho de leitura (genérico, de campo de record) não é idêntico ao
+         * Script.getParameter() usado pelo Invoice - entity-encode HTML e insere uma tag de
+         * fechamento </br> solta (que não existe no valor originalmente configurado no
+         * deployment). Correção isolada aqui, no Credit Memo - não altera nada no Invoice.
+         */
+        function normalizeSharedTermsCondition(text) {
+
+            if (!text) return "";
+
+            return text
+                .replace(/&lt;/gi, '<')
+                .replace(/&gt;/gi, '>')
+                .replace(/&amp;/gi, '&')
+                .replace(/<\/br\s*>/gi, '');
+
+        }
+
         function getSharedInvoiceTermsCondition() {
 
             try {
 
+                // record.load para type "scriptdeployment" exige o internal ID numérico - o
+                // scriptid (ex.: customdeploy_pd_pdf_print_invoice_sl) não é aceito como id.
+                // Resolve o internal ID via busca antes de carregar o record.
+                const deploymentSearchResults = search.create({
+                    type: "scriptdeployment",
+                    filters: [["scriptid", "is", cts.CUSTOM_SCRIPT.SUITELET.PRINT_INVOICE.DEPLOY]],
+                    columns: ["internalid"]
+                }).run().getRange({start: 0, end: 1});
+
+                if (!deploymentSearchResults || !deploymentSearchResults.length) return "";
+
+                const deploymentInternalId = deploymentSearchResults[0].getValue({name: "internalid"});
+
+                if (!deploymentInternalId) return "";
+
                 const invoiceSuiteletDeployment = record.load({
                     type: "scriptdeployment",
-                    id: cts.CUSTOM_SCRIPT.SUITELET.PRINT_INVOICE.DEPLOY
+                    id: deploymentInternalId
                 });
 
-                return invoiceSuiteletDeployment.getValue({
+                const rawTermsCondition = invoiceSuiteletDeployment.getValue({
                     fieldId: cts.SCRIPT_PARAMETERS.INVOICE_TERMS_CONDITION
                 }) || "";
+
+                return normalizeSharedTermsCondition(rawTermsCondition);
 
             } catch (e) {
                 log.error({
@@ -487,7 +538,7 @@ define([
 
         }
 
-        function buildSpecialInstructions(originType, creditMemoRecord, returnAuthorizationRecord, invoiceFromRmaRecord) {
+        function buildSpecialInstructions(originType, creditMemoRecord, returnAuthorizationRecord, invoiceFromRmaRecord, authorizedSignatureName) {
 
             if (originType === ORIGIN_TYPE.RMA_SCRAP) {
 
@@ -501,8 +552,8 @@ define([
                 return [
                     "This is a credit note DO NOT PAY",
                     `Invoice ${invoiceNumberFromRma} - RMA ${rmaNumber}`,
-                    `Wrong Material: ${returnReason}`,
-                    "Authorized Signature: SA"
+                    `${returnReason}`,
+                    `Authorized Signature: ${authorizedSignatureName}`
                 ].join("\n");
 
             }
@@ -513,7 +564,7 @@ define([
             return [
                 "This is a credit note DO NOT PAY",
                 `Invoice ${invoiceNumber}`,
-                "Authorized Signature: SA"
+                `Authorized Signature: ${authorizedSignatureName}`
             ].join("\n");
 
         }

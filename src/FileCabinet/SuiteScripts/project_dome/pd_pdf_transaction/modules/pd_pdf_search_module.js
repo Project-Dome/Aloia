@@ -158,5 +158,24 @@ define([
             })["tranid"]
         }
 
+        // Resolve tranid + terms (texto) da Sales Order relacionada num único lookup - usado
+        // pelo Credit Memo, que precisa dos dois campos da mesma transação relacionada
+        // (Sales Order exibida no template e Terms herdado dela, não do próprio Credit Memo).
+        handler.getSalesOrderLookup = (salesOrderId) => {
+            if (!salesOrderId) return null;
+            const salesOrderLookup = search.lookupFields({
+                type: search.Type.TRANSACTION,
+                id: salesOrderId,
+                columns: [
+                    "tranid",
+                    "terms"
+                ]
+            });
+            return {
+                tranid: salesOrderLookup["tranid"],
+                terms: salesOrderLookup["terms"]?.[0]?.text || ""
+            }
+        }
+
         return handler;
     });

@@ -15,7 +15,9 @@ define([],
                 TRANSACTIONS: {
                     BODY_FIELDS: {
                         INVOICE_PDF: "custbody_pd_pdf_invoice_pdf_dc",
-                        CREDIT_MEMO_PDF: "custbody_pd_pdf_credit_memo_pdf_dc"
+                        CREDIT_MEMO_PDF: "custbody_pd_pdf_credit_memo_pdf_dc",
+                        RELATED_SO: "custbody_related_so",
+                        AUTHORIZED_SIGNATURE: "custbody_pd_authorized_signature"
                     }
                 },
                 RETURN_AUTHORIZATION: {

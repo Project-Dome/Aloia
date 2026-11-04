@@ -1,8 +1,8 @@
 # Project Manifest: pd_pdf_transaction — Impressão de PDF de Transações
 
 **Cliente:** Aloia
-**Gerado em:** 03/11/2026 (atualizado: cadastro do campo `custbody_pd_pdf_credit_memo_pdf_dc`)
-**Versão do Spec:** TECH-SPEC.md (card DEV-845) — Special Instructions e layout fechados
+**Gerado em:** 04/11/2026 (atualizado: cadastro dos campos `custbody_related_so` e `custbody_pd_authorized_signature`)
+**Versão do Spec:** TECH-SPEC.md (card DEV-845) — rodada de validação em Sandbox (Sales Order/Terms e Authorized Signature dinâmico)
 **Gerado por:** manifest-builder
 
 > **Escopo desta versão:** este é o primeiro MANIFEST do módulo `pd_pdf_transaction`. Por decisão do
@@ -75,12 +75,21 @@ Nenhum custom record novo nesta feature.
 | Campo | Internal ID | Tipo | Descrição |
 |-------|-------------|------|-----------|
 | PDF Credit Memo (DC) | `custbody_pd_pdf_credit_memo_pdf_dc` | A confirmar² | Servir de campo auxiliar análogo a `custbody_pd_pdf_invoice_pdf_dc` (Invoice), para o fluxo de PDF do Credit Memo |
+| Related SO | `custbody_related_so` | A confirmar³ (List/Record — Sales Order) | Resolver o número da Sales Order relacionada exibido no template ("Sales Order:") e servir de fonte do Terms do Credit Memo (lido da Sales Order relacionada, não do próprio registro) |
+| Authorized Signature | `custbody_pd_authorized_signature` | List/Record (Employee) | Armazenar o funcionário cujo nome completo substitui o texto estático "SA" na linha "Authorized Signature:" das Special Instructions do Credit Memo |
 
 > ² Internal ID definido pelo usuário seguindo o padrão de nomenclatura já estabelecido no projeto
 > (`custbody_pd_pdf_<entidade>_pdf_dc`), por isso tratado como real (não marcado com `*`). Tipo de
 > dado exato a confirmar — o campo análogo do Invoice (`custbody_pd_pdf_invoice_pdf_dc`) também não
 > possui XML de objeto em `src/Objects`, só referência em código (leitura em
 > `manipulateInvoicePdf`, módulo `pd_pdf_utils_module.js`), então seu tipo tampouco está confirmado.
+>
+> ³ Internal ID confirmado diretamente pelo usuário nesta rodada (não vem de XML nem de TECH-SPEC
+> anterior) — campo **pré-existente no ambiente, não gerenciado por este projeto SDF**. Evidência:
+> aparece como `sourcelist` em outros campos custom do projeto (ex.: `custbody_pd_so_customer.xml`),
+> mas não possui XML de definição própria aqui. Papel funcional (campo que referencia a Sales Order
+> relacionada da transação) está confirmado; detalhes formais do tipo (ex.: `sourcefilter`, se é o
+> mesmo campo em todos os tipos de transação) permanecem a confirmar por falta de XML próprio.
 
 ---
 
@@ -103,4 +112,9 @@ PRINT_CREDIT_MEMO: {
 
 ## Notas / Pendências
 
-Nenhuma pendência em aberto no momento.
+- **`custbody_pd_authorized_signature` candidato a objeto SDF próprio:** este campo foi criado
+  diretamente na UI do Sandbox e **não existe em nenhum XML deste projeto SDF nem em nenhum código**
+  até o momento — por isso já "desapareceu" uma vez num refresh de sandbox e precisou ser recriado.
+  É candidato natural a virar `customfield` XML deste projeto, para sobreviver a futuros refreshes,
+  mas essa decisão **ainda não foi tomada** pelo usuário — não assumir, apenas sinalizar aqui até
+  que seja pedida explicitamente (ex.: ao `sdf-generator`).

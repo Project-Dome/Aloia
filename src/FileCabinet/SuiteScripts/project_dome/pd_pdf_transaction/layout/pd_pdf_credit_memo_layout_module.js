@@ -376,6 +376,11 @@ define([],
                                     </div>
 
                                     <div class="field">
+                                        <span class="field-label">Sales Order:</span>
+                                        <span class="field-value">${escapeXml(parameters.salesOrder)}</span>
+                                    </div>
+
+                                    <div class="field">
                                         <span class="field-label">Order Date:</span>
                                         <span class="field-value">${escapeXml(formatDateUS(parameters.orderDate))}</span>
                                     </div>

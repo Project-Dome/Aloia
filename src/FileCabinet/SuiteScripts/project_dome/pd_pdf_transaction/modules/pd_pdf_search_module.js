@@ -60,21 +60,22 @@ define([
         }
 
         /**
-         * Nome completo (Prepared By) + nome de assinatura do funcionário.
+         * Nome completo (Prepared By) + nome de assinatura + ID do PNG de assinatura (se houver).
          * Se a role não tiver permissão no Employee, usa o nome de exibição do SystemNote.
          */
         handler.getSignerData = (employeeId, fallbackDisplayName) => {
-            let first = "", last = "", display = fallbackDisplayName || "";
+            let first = "", last = "", display = fallbackDisplayName || "", signatureFileId = "";
             if (employeeId) {
                 try {
                     const r = query.runSuiteQL({
-                        query: "SELECT firstname, lastname, entityid FROM employee WHERE id = ?",
+                        query: "SELECT firstname, lastname, entityid, custentity_pd_aae_signature AS signaturefile FROM employee WHERE id = ?",
                         params: [employeeId]
                     }).asMappedResults()[0];
                     if (r) {
                         first = r.firstname || "";
                         last = r.lastname || "";
                         display = r.entityid || display;
+                        signatureFileId = r.signaturefile || "";
                     }
                 } catch (e) {
                     log.audit({title: "getSignerData - usando fallback do SystemNote", details: e.message});
@@ -82,7 +83,8 @@ define([
             }
             const result = {
                 fullName: display,
-                signatureName: formatSignatureName(first, last, display)
+                signatureName: formatSignatureName(first, last, display),
+                signatureFileId
             };
             log.debug({title: "getSignerData RESULT", details: {employeeId, result}});
             return result;

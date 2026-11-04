@@ -817,8 +817,11 @@ define([
             return dynamicHtml;
         }
 
-        // Assinatura em texto (nome + último sobrenome do criador) — sem imagem PNG.
+        // Assinatura: PNG do funcionário se existir; senão, texto (nome + último sobrenome) com a fonte manuscrita.
         function createDynamicSing(parameters) {
+            if (parameters.signature) {
+                return '<img class="sign-img" src="' + formatUrlForXml(parameters.signature) + '" alt="Signature"/>';
+            }
             if (!parameters.signatureName) return '<span>    </span>';
             const style = parameters.signatureFontLink
                 ? 'font-family: SignatureFont; font-size: 16pt;'

@@ -1,0 +1,280 @@
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<style>
+    :root {
+        --pd-accent:       #E8521A;
+        --pd-accent-dark:  #c44415;
+        --pd-accent-light: #fff4f0;
+        --pd-navy:         #1c2b3a;
+        --pd-navy2:        #243547;
+        --pd-border:       #dde3ea;
+        --pd-green:        #27ae60;
+        --pd-green-light:  #eafaf1;
+        --pd-gray:         #bdc3c7;
+    }
+    body, label, input, select, button, td, th { font-family: 'Urbanist', sans-serif !important; }
+    body { padding-bottom: 42px; overflow: hidden; }
+
+    #pd-title-row { position: sticky; top: 0; z-index: 50; background: #fff; padding-top: 4px; padding-bottom: 4px; }
+    .filter-label { font-size: 11px; font-weight: 600; color: #555; margin-bottom: 2px; display: block; text-transform: uppercase; letter-spacing: 0.3px; }
+    .pd-filter-card { border: 1px solid var(--pd-border); border-radius: 6px; background: #fafafa; }
+    .pd-filter-card .card-header { background: #f2f2f2; border-bottom: 1px solid #d0d0d0; padding: 8px 14px; font-size: 12px; font-weight: 600; color: #444; cursor: pointer; }
+    .pd-filter-card .card-header:hover { background: #eaeef3; }
+    .btn-filter-apply { background: var(--pd-accent); color: #fff; border: none; font-weight: 700; }
+    .btn-filter-apply:hover { background: var(--pd-accent-dark); color: #fff; }
+
+    .email-input-wrap { position: relative; }
+    .email-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+    .email-badge-valid { background: var(--pd-green-light); color: var(--pd-green); }
+    .email-badge-invalid { background: #fdecea; color: #c0392b; }
+    .email-badge-empty { background: #f0f0f0; color: #888; }
+
+    .export-bar { display: flex; align-items: center; gap: 6px; }
+    .btn-export { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 4px; cursor: pointer; }
+    .btn-export-excel { background: #1a7431; color: #fff; border: none; }
+    .btn-export-excel:hover { background: #155a27; }
+    .btn-export-pdf { background: #c0392b; color: #fff; border: none; }
+    .btn-export-pdf:hover { background: #a93226; }
+
+    .pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f8f9fa; border-top: 1px solid var(--pd-border); font-size: 11px; }
+    .pagination-info { color: #666; }
+    .pagination-controls { display: flex; align-items: center; gap: 6px; }
+    .btn-page { background: #fff; border: 1px solid var(--pd-border); color: #444; font-size: 11px; padding: 3px 8px; border-radius: 4px; cursor: pointer; font-family: 'Urbanist', sans-serif; }
+    .btn-page:hover:not(:disabled) { background: #eaeef3; }
+    .btn-page:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-page.active { background: var(--pd-navy); color: #fff; border-color: var(--pd-navy); }
+    .page-size-select { font-size: 11px; padding: 2px 6px; border: 1px solid var(--pd-border); border-radius: 4px; font-family: 'Urbanist', sans-serif; }
+
+    .pd-table-card { border: 1px solid var(--pd-border); border-radius: 6px; }
+    .pd-table-card .card-header { background: var(--pd-navy); color: #fff; padding: 8px 14px; border-radius: 6px 6px 0 0; font-size: 13px; }
+    .table-scroll-wrap { min-height: 120px; overflow-y: auto; overflow-x: auto; transition: height 0.25s ease; }
+
+    #pd-data-table thead th {
+        background: var(--pd-navy2); color: #ecf0f1;
+        font-size: 10px; font-weight: 600; white-space: nowrap;
+        padding: 6px 10px; position: sticky; top: 0; z-index: 2;
+        border-bottom: 2px solid var(--pd-navy);
+        text-transform: uppercase; letter-spacing: 0.3px; user-select: none;
+    }
+    #pd-data-table thead th.sortable { cursor: pointer; }
+    #pd-data-table thead th.sortable:hover { background: #2d4a62; }
+    #pd-data-table thead th .sort-icon { margin-left: 4px; opacity: 0.4; font-size: 9px; }
+    #pd-data-table thead th.sort-asc .sort-icon,
+    #pd-data-table thead th.sort-desc .sort-icon { opacity: 1; color: var(--pd-accent); }
+    #pd-data-table thead th.th-group-1 { box-shadow: inset 0 3px 0 var(--pd-accent); }
+    #pd-data-table thead th.th-group-2 { box-shadow: inset 0 3px 0 #8e44ad; }
+    #pd-data-table thead th.th-group-3 { box-shadow: inset 0 3px 0 var(--pd-green); }
+
+    #pd-data-table tbody td { font-size: 11px; padding: 6px 10px; white-space: nowrap; vertical-align: middle; }
+    #pd-data-table tbody tr.summary-row:hover td { background-color: var(--pd-accent-light) !important; }
+    #pd-data-table tbody tr.summary-row:nth-child(4n+1) td { background-color: #fafafa; }
+    #pd-data-table tbody tr.summary-row.row-selected td { background-color: #fff4f0 !important; }
+    #pd-data-table tfoot td { font-size: 11px; padding: 7px 10px; background: #1c2b3a; color: #ecf0f1; font-weight: 700; border-top: 2px solid var(--pd-accent); white-space: nowrap; }
+    #pd-data-table tfoot td.td-total-footer { color: #2ecc71; }
+
+    .badge-ok    { background: var(--pd-green); color: #fff; padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+    .badge-none  { background: var(--pd-gray); color: #fff; padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+    .badge-open    { background: #f0ad4e; color: #fff; padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+    .badge-overdue { background: #c0392b; color: #fff; padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+    .td-num   { text-align: right; font-variant-numeric: tabular-nums; }
+    .td-total { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; color: var(--pd-green); }
+
+    .pd-action-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #f8f9fa; border-top: 1px solid var(--pd-border); }
+    .pd-action-bar .selected-count { font-size: 12px; color: #444; font-weight: 600; }
+    .btn-preview { background: #fff; border: 1px solid var(--pd-navy); color: var(--pd-navy); font-weight: 700; }
+    .btn-preview:hover:not(:disabled) { background: #eaeef3; }
+    .btn-send { background: var(--pd-accent); border: none; color: #fff; font-weight: 700; }
+    .btn-send:hover:not(:disabled) { background: var(--pd-accent-dark); color: #fff; }
+    .btn-preview:disabled, .btn-send:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .pd-history-card { border: 1px solid var(--pd-border); border-radius: 6px; margin-top: 12px; }
+    .pd-history-card .card-header { background: #f2f2f2; border-bottom: 1px solid #d0d0d0; padding: 8px 14px; font-size: 12px; font-weight: 600; color: #444; }
+    .history-row { padding: 7px 14px; border-bottom: 1px solid #f0f0f0; font-size: 11px; display: flex; justify-content: space-between; }
+    .history-row:last-child { border-bottom: none; }
+    .history-empty { padding: 16px; text-align: center; color: #888; font-size: 12px; }
+
+    #pd-footer { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; background: rgba(28,43,58,0.95); padding: 5px 16px; backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: flex-end; border-top: 2px solid var(--pd-accent); }
+</style>
+
+<!-- TÍTULO -->
+<div id="pd-title-row" class="row mb-2">
+    <div class="col-sm-12">
+        <div class="d-flex align-items-center justify-content-between" style="padding-bottom:10px; border-bottom:3px solid var(--pd-accent);">
+            <div class="d-flex align-items-center">
+                <img src="" alt="Aloia Aerospace" style="height:36px; object-fit:contain; margin-right:16px;" onerror="this.style.display='none'" />
+                <div style="border-left:2px solid var(--pd-accent); padding-left:12px;">
+                    <div style="font-size:10px; color:var(--pd-accent); font-weight:700; letter-spacing:1.5px; text-transform:uppercase;">Envio de Invoices por E-mail</div>
+                    <div style="font-size:9px; color:#888; margin-top:1px;">Selecione o cliente e as invoices para gerar anexos e enviar automaticamente</div>
+                </div>
+            </div>
+            <div class="d-flex align-items-center" style="gap:8px;">
+                <a class="btn btn-sm" href="/app/center/card.nl?sc=-29&whence=" style="border:1px solid var(--pd-accent); color:var(--pd-accent); font-weight:700; font-size:11px;">
+                    <i class="fa fa-home"></i> Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FILTROS -->
+<div class="row mb-3">
+    <div class="col-sm-12">
+        <div class="card pd-filter-card">
+            <div class="card-header" data-toggle="collapse" data-target="#pd-filter-body" aria-expanded="true">
+                <i class="fa fa-filter text-secondary"></i> Filtros de Busca
+                <i class="fa fa-chevron-down float-right mt-1" style="font-size:10px;"></i>
+            </div>
+            <div class="card-body collapse show py-2" id="pd-filter-body">
+                <div class="row">
+                    <div class="col-sm-4 form-group mb-2">
+                        <label class="filter-label">Customer *</label>
+                        <select class="form-control form-control-sm" id="customerSelect">
+                            <option value="">— Selecione um cliente —</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-5 form-group mb-2">
+                        <label class="filter-label">Customer Invoice Email</label>
+                        <div class="email-input-wrap">
+                            <input type="text" class="form-control form-control-sm d-inline-block" id="customerInvoiceEmail" style="width:calc(100% - 90px);" readonly />
+                            <span class="email-badge email-badge-empty" id="emailBadge">—</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-3 form-group mb-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-sm btn-filter-apply" id="btn_search" disabled>
+                            <i class="fa fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TABELA -->
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card pd-table-card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <span><i class="fa fa-file-invoice-dollar mr-1"></i> Invoices <span id="tableSubtitle" style="font-weight:400; opacity:0.8;"></span></span>
+                <div class="export-bar" id="export-bar" style="display:none;">
+                    <button type="button" class="btn-export btn-export-excel" id="btn_export_excel"><i class="fa fa-table"></i> Excel</button>
+                    <button type="button" class="btn-export btn-export-pdf" id="btn_export_pdf"><i class="fa fa-print"></i> PDF</button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-scroll-wrap">
+                    <table class="table table-sm table-hover mb-0" id="pd-data-table">
+                        <thead>
+                            <tr>
+                                <th style="width:32px;"><input type="checkbox" id="chkSelectAll" /></th>
+                                <th class="th-group-1 sortable" data-col="tranid">Invoice # <span class="sort-icon">↕</span></th>
+                                <th class="th-group-1 sortable" data-col="trandate">Date <span class="sort-icon">↕</span></th>
+                                <th class="th-group-1 sortable" data-col="duedate">Due Date <span class="sort-icon">↕</span></th>
+                                <th class="th-group-1 sortable" data-col="amount">Amount <span class="sort-icon">↕</span></th>
+                                <th class="th-group-2 sortable" data-col="status">Status <span class="sort-icon">↕</span></th>
+                                <th class="th-group-3">ATA-106</th>
+                                <th class="th-group-3">COC</th>
+                                <th class="th-group-3">Packing List</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-5">
+                                    <i class="fa fa-search fa-2x mb-2 d-block" style="color:var(--pd-accent);"></i>
+                                    Selecione um cliente e clique em Search para visualizar as invoices em aberto.
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot id="pd-table-footer" style="display:none;">
+                            <tr>
+                                <td colspan="4"></td>
+                                <td class="td-total-footer" id="footerTotal"></td>
+                                <td colspan="4"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="pagination-bar" id="pagination-bar" style="display:none;">
+                    <div class="pagination-info" id="pagination-info"></div>
+                    <div class="pagination-controls">
+                        <span style="color:#666; margin-right:4px;">Linhas por página:</span>
+                        <select class="page-size-select" id="page-size-select">
+                            <option value="10">10</option>
+                            <option value="25" selected>25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                        <button class="btn-page" id="btn-first-page" title="Primeira">«</button>
+                        <button class="btn-page" id="btn-prev-page" title="Anterior">‹</button>
+                        <span id="pagination-pages" style="display:flex; gap:3px;"></span>
+                        <button class="btn-page" id="btn-next-page" title="Próxima">›</button>
+                        <button class="btn-page" id="btn-last-page" title="Última">»</button>
+                    </div>
+                </div>
+                <div class="pd-action-bar">
+                    <span class="selected-count" id="selectedCount">0 invoice(s) selecionada(s)</span>
+                    <div style="display:flex; gap:8px;">
+                        <button type="button" class="btn btn-sm btn-preview" id="btn_preview_email" disabled>
+                            <i class="fa fa-eye"></i> Preview Email
+                        </button>
+                        <button type="button" class="btn btn-sm btn-send" id="btn_send_email" disabled>
+                            <i class="fa fa-paper-plane"></i> Send Email
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- COMMUNICATION HISTORY -->
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card pd-history-card">
+            <div class="card-header">
+                <i class="fa fa-history text-secondary"></i> Communication History
+            </div>
+            <div class="card-body p-0" id="historyBody">
+                <div class="history-empty">Filtre um cliente para visualizar o histórico de envios.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- RODAPÉ -->
+<div id="pd-footer">
+    <small style="color:#bbb; font-family:'Urbanist',sans-serif; font-size:10px; letter-spacing:0.5px; display:flex; align-items:center; gap:8px;">
+        Desenvolvido por
+        <img src="https://domegrowth.com/assets/dome-logo-Ca9pFrO_.png" alt="Dome" style="height:20px; object-fit:contain; opacity:0.85;" onerror="this.style.display='none'" />
+    </small>
+</div>
+
+<script>
+(function () {
+    function getViewH() { try { return window.parent.innerHeight; } catch (e) {} return window.innerHeight; }
+    function getDocumentTop(el) { var top = 0; while (el && el !== document.body) { top += el.offsetTop; el = el.offsetParent; } return top; }
+    function adjustTableHeight() {
+        var wrap = document.querySelector('.table-scroll-wrap');
+        var footer = document.getElementById('pd-footer');
+        var pbar = document.getElementById('pagination-bar');
+        var actionBar = document.querySelector('.pd-action-bar');
+        if (!wrap || !footer) return;
+        wrap.style.height = wrap.style.maxHeight = '';
+        void wrap.offsetHeight;
+        var wrapViewTop = getDocumentTop(wrap) - (window.scrollY || 0);
+        var pbarH = pbar && pbar.style.display !== 'none' ? (pbar.offsetHeight || 0) : 0;
+        var actionBarH = actionBar ? (actionBar.offsetHeight || 0) : 0;
+        var available = getViewH() - wrapViewTop - (footer.offsetHeight || 0) - pbarH - actionBarH - 8;
+        var h = Math.max(available, 120) + 'px';
+        wrap.style.height = wrap.style.maxHeight = h;
+    }
+    window.adjustTableHeight = adjustTableHeight;
+    $(document).ready(function () {
+        setTimeout(adjustTableHeight, 100);
+        setTimeout(adjustTableHeight, 400);
+        $('#pd-filter-body').on('shown.bs.collapse hidden.bs.collapse', adjustTableHeight);
+        $(window).on('resize', adjustTableHeight);
+        try { window.parent.addEventListener('resize', adjustTableHeight); } catch (e) {}
+    });
+})();
+</script>

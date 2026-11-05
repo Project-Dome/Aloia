@@ -17,6 +17,12 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
 
         var SYSTEM_NOTE_TYPE_CREATE = '1';
 
+        // Header da coluna de lote/serial, definido pelos tipos de item presentes no documento:
+        // só serializados -> HEADER_SERIAL; só por lote -> HEADER_LOT; misto ou sem número -> HEADER_MIXED.
+        var HEADER_SERIAL = 'Serial';
+        var HEADER_LOT = 'Lot/Batch Number';
+        var HEADER_MIXED = 'Lot/Serial #';
+
         // Fonte manuscrita (TTF/OTF no File Cabinet, marcada como "Available Without Login").
         // Se o arquivo não existir, cai no fallback Times italic.
         var SIGNATURE_FONT_PATH = 'SuiteScripts/projectdome/pd_pdf_ata_106/Fonts/GreatVibes-Regular.ttf';
@@ -197,15 +203,47 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
             }
         }
 
-        // Mesmo critério usado no invoice/packing list (DEV-867): item serializado exibe
-        // "SERIAL", item por lote exibe "BATCH/LOT".
-        function getItemRecordType(itemId) {
-            if (!itemId) return null;
-            return search.lookupFields({
-                type: search.Type.ITEM,
-                id: itemId,
-                columns: ['recordtype']
-            })['recordtype'];
+        /**
+         * Tipo de numeração do item a partir do recordtype:
+         *   serializedinventoryitem / serializedassemblyitem   -> 'serial'
+         *   lotnumberedinventoryitem / lotnumberedassemblyitem -> 'lot'
+         *   qualquer outro                                     -> ''
+         * Usa cache por execução pra não repetir o lookup do mesmo item em várias linhas.
+         */
+        function getNumberingType(itemId, cache) {
+            if (!itemId) return '';
+            if (cache.hasOwnProperty(itemId)) return cache[itemId];
+            var type = '';
+            try {
+                var recType = search.lookupFields({
+                    type: search.Type.ITEM,
+                    id: itemId,
+                    columns: ['recordtype']
+                }).recordtype || '';
+                if (recType.indexOf('serialized') === 0) type = 'serial';
+                else if (recType.indexOf('lotnumbered') === 0) type = 'lot';
+            } catch (e) {
+                log.audit('getNumberingType - falha no lookup', {itemId: itemId, message: e.message});
+            }
+            cache[itemId] = type;
+            return type;
+        }
+
+        /**
+         * Header da coluna conforme os tipos presentes nas linhas que efetivamente têm número.
+         * Documento só com serializados -> 'Serial'; só com lote -> 'Lot/Batch Number';
+         * misto ou sem nenhum número -> header neutro.
+         */
+        function resolveSerialHeader(rows) {
+            var hasSerial = false, hasLot = false;
+            for (var i = 0; i < rows.length; i++) {
+                if (!rows[i].serialText) continue;
+                if (rows[i].numberingType === 'serial') hasSerial = true;
+                else if (rows[i].numberingType === 'lot') hasLot = true;
+            }
+            if (hasSerial && !hasLot) return HEADER_SERIAL;
+            if (hasLot && !hasSerial) return HEADER_LOT;
+            return HEADER_MIXED;
         }
 
         /**
@@ -433,6 +471,9 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
             var lineCount = invoice.getLineCount({sublistId: 'item'}) || 0;
             var rows = [];
 
+            // Cache de tipo de numeração (serial/lot) por item, válido nesta execução.
+            var typeCache = {};
+
             // SO de origem da invoice — usada pra priorizar, no match por lote, o Item
             // Receipt cujo custbody_related_so corresponde a esta mesma SO.
             var invoiceSoId = invoice.getValue({fieldId: 'createdfrom'}) || '';
@@ -497,7 +538,6 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
                 }) || '';
 
                 var itemId = invoice.getSublistValue({sublistId: 'item', fieldId: 'item', line: i}) || '';
-                var inventoryLabel = getItemRecordType(itemId) === "serializedinventoryitem" ? "SERIAL" : "BATCH/LOT";
 
                 try {
 
@@ -541,6 +581,10 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
                             // identidade do lote (não por quantidade), um lookup por linha.
                             var lotCandidates = getLotCertCandidates(itemId);
 
+                            // Tipo de numeração do item (serial/lot) — só consultado quando
+                            // a linha tem número atribuído, que é quando ele importa pro header.
+                            var numberingType = getNumberingType(itemId, typeCache);
+
                             for (var a = 0; a < assCount; a++) {
 
                                 var serialNum = invDet.getSublistText({
@@ -563,7 +607,8 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
                                     statusText: statusTxt,
                                     statusVal: statusVal,
                                     manufacturerName: manufacturerName,
-                                    serialText: inventoryLabel + ': ' + serialNum,
+                                    serialText: serialNum,
+                                    numberingType: numberingType,
                                     lotText: "",
                                     poNumber: poNumber,
                                     certNumber: matchCertByLot(lotCandidates, serialNum, invoiceSoId)
@@ -695,6 +740,10 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
             // buscado por item dentro de collectLines (ver getLotCertCandidates/matchCertByLot,
             // com fallback por quantidade/status pra itens sem lote).
             var rows = collectLines(invoice, vendorIdFilter, groupFilter);
+
+            // Header da coluna de lote/serial conforme os itens deste documento.
+            var serialHeader = resolveSerialHeader(rows);
+            log.debug({title: 'renderPdf - header lote/serial', details: {serialHeader: serialHeader}});
 
             // Altura do spacer calculada pelo conteúdo (antes era 280px fixos + 15 linhas vazias,
             // o que estourava a página e empurrava o rodapé sozinho pra página 2).
@@ -835,15 +884,15 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
                 // 4. ITEMS TABLE
                 '<table class="item-table">' +
 
-                '  <tr>' +
+                '  <thead><tr>' +
                 '    <th style="width: 18%;" class="col-left">Part No.</th>' +
                 '    <th style="width: 26%;" class="col-left">Description</th>' +
                 '    <th style="width: 6%;"  class="col-center">Cond</th>' +
                 '    <th style="width: 7%;"  class="col-center">Qty</th>' +
-                '    <th style="width: 17%;" class="col-center">Lot/Serial #</th>' +
+                '    <th style="width: 17%;" class="col-center">' + escapeXml(serialHeader) + '</th>' +
                 '    <th style="width: 12%;" class="col-center">Cert No</th>' +
                 '    <th style="width: 14%;" class="col-center">PO Number</th>' +
-                '  </tr>' +
+                '  </tr></thead>' +
 
                 buildItemRowsXml(rows, codPo) +
 

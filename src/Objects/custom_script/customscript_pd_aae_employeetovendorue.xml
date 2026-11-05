@@ -6,7 +6,7 @@
   <notifyemails></notifyemails>
   <notifyowner>T</notifyowner>
   <notifyuser>F</notifyuser>
-  <scriptfile>[/SuiteScripts/projectdome/pd-c-aev/UserEvent/EmployeeToVendor.UE.js]</scriptfile>
+  <scriptfile>[/SuiteScripts/Dome/pd_employee/pd_aev_employee_to_vendor/user_event/EmployeeToVendor.UE.js]</scriptfile>
   <scriptdeployments>
     <scriptdeployment scriptid="customdeploy_pd_aae_employeetovendorue">
       <allemployees>T</allemployees>

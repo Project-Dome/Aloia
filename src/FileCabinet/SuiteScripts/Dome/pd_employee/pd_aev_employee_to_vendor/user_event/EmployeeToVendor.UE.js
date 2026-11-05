@@ -6,7 +6,7 @@
 define(
     [
         'N/record', 'N/log', 'N/format', 'N/https', 'N/redirect', 'N/runtime',
-        '../UseCases/CreateVendor'
+        '../use_case/CreateVendor'
     ],
     function 
     (
@@ -31,7 +31,7 @@ define(
                         functionName: 'updateVendorFromEmployee'
                     });
 
-                    form.clientScriptModulePath = './UpdateVendor.CS.js';
+                    form.clientScriptModulePath = '../client/UpdateVendor.CS.js';
                 }
             } catch (error) {
                 log.error({ title: 'Error in beforeLoad', details: error });

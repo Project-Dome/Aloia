@@ -6,7 +6,7 @@ define([
         "N/scriptTypes/restlet",
         "N/record",
 
-        "../../modules/pd_frf_search_module"
+        "../modules/pd_frf_search_module"
     ],
 
     (restlet, record, searchModule) => {

@@ -7,7 +7,7 @@ define([
         "N/record",
         "N/ui/serverWidget",
 
-        "../../modules/pd_frf_search_module"
+        "../modules/pd_frf_search_module"
     ],
 
     (query, record, serverWidget, searchModule) => {

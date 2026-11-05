@@ -1,10 +1,74 @@
 <deploy>
-    <!-- DEV-623: deploy restrito a migracao pra Dome/ (arquivos + objetos de script).
+    <!-- DEV-623: deploy restrito a migracao pra Dome/ (arquivos + objetos de script que apontam pra Dome/).
          Original: configuration, FileCabinet/*, Objects/*, Translations/* -->
     <files>
         <path>~/FileCabinet/SuiteScripts/Dome/*</path>
     </files>
     <objects>
-        <path>~/Objects/custom_script/*</path>
+        <path>~/Objects/custom_script/customscript_pd_aae_cofc_pdf_sl.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_aae_employeetovendorue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_aae_generationpdfue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_aae_structurepdfsl.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_aae_update_vendor.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_blc_convt_bank_layout_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_ccr_approve_comission.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_ccr_comission_history_rt.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_ccr_comission_history_st.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_ccr_comission_paymt_rt.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_ccr_comission_paymt_st.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_ccr_comission_report_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_ccr_commission_approv_mr.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_ccr_create_comission_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_ccr_create_vendor_bill.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_ccr_payment_details.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_ccr_search_comission.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_ccr_view_commission.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_cso_button_requis_ord_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_cso_pcdord_slord_sync_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_cso_purchase_order_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_cso_purchase_requ_st.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_cso_purchase_requis_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_cso_purchase_spl_ord_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_cso_purchord_propagat_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_cso_sales_order_cs.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_cso_sales_order_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_ctf_clear_tran_fields_cs.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_cvs_transaction_cl.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_dcr_purchase_order_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_dcr_sales_order_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_frf_rec_ind_ship_rl.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_frf_recei_ind_ship_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_frf_receive_fields_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_iss_inbshipment_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_item_mass_delete.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_lgl_print_log_label_sl.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_lgl_print_log_lib_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_mass_delete.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_pdf_invoice_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_pdf_print_invoice_sl.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_pdf_print_pack_list_sl.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_pos_comm_approval_po_rt.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_pos_comm_approval_po_st.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_pos_commission_approv_mr.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_pos_commission_paym_rt.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_pos_commission_paym_st.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_pos_vendor_bill_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_pos_vendor_payment_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_pow_purch_requisition_mr.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_pow_purch_requisition_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_pow_purchase_order_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_pow_sales_order_mr.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_pow_sales_order_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_prd_purc_req_deletion_st.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_prd_purc_req_deletion_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_sem_send_email_sl.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_sem_send_email_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_suiteql.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_tno_inbound_track_num_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_tno_track_notificat_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_tno_track_number_orde_ue.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_tno_tracking_number_rt.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_uoc_update_op_cost_sl.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_uoc_update_op_cost_ue.xml</path>
     </objects>
 </deploy>

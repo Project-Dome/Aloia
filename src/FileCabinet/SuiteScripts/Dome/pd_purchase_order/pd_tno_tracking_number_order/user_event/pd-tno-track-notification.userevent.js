@@ -8,13 +8,13 @@
 define([
     'N/log',
 
-    '../pd_tno_service/pd-tno-track-notification-query.service.js',
-    '../pd_tno_service/pd-tno-register-tracking-number.service.js',
-    '../pd_tno_service/pd-tno-gettrackinfo.service.js',
-    '../pd_tno_service/pd-tno-extract-track-historical.service.js',
-    '../pd_tno_service/pd-tno-build-track-notification-payload.service.js',
-    '../pd_tno_service/pd-tno-track-notification-update.service.js',
-    '../pd_tno_service/pd-tno-extract-picked-up-date.service.js'
+    '../service/pd-tno-track-notification-query.service.js',
+    '../service/pd-tno-register-tracking-number.service.js',
+    '../service/pd-tno-gettrackinfo.service.js',
+    '../service/pd-tno-extract-track-historical.service.js',
+    '../service/pd-tno-build-track-notification-payload.service.js',
+    '../service/pd-tno-track-notification-update.service.js',
+    '../service/pd-tno-extract-picked-up-date.service.js'
 
 ], function (
     log,

@@ -6,7 +6,7 @@
   <notifyemails></notifyemails>
   <notifyowner>T</notifyowner>
   <notifyuser>F</notifyuser>
-  <scriptfile>[/SuiteScripts/projectdome/pd_tno_tracking_number_order/pd_tno_userevent/pd-tno-tracking-number-order.userevetn.js]</scriptfile>
+  <scriptfile>[/SuiteScripts/Dome/pd_purchase_order/pd_tno_tracking_number_order/user_event/pd-tno-tracking-number-order.userevetn.js]</scriptfile>
   <scriptdeployments>
     <scriptdeployment scriptid="customdeploy_pd_tno_track_number_orde_ue">
       <allemployees>T</allemployees>

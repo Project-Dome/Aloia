@@ -9,10 +9,10 @@
 define(
     [
         'N/log',
-        '../pd_tno_service/pd-tno-parse-webhook-payload.service',
-        '../pd_tno_service/pd-tno-track-notification-query.service',
-        '../pd_tno_service/pd-tno-track-notification-update.service',
-        '../pd_tno_service/pd-tno-build-track-notification-payload.service'
+        '../service/pd-tno-parse-webhook-payload.service',
+        '../service/pd-tno-track-notification-query.service',
+        '../service/pd-tno-track-notification-update.service',
+        '../service/pd-tno-build-track-notification-payload.service'
     ],
     function (
         log,

@@ -27,8 +27,8 @@ define([], function () {
 
     var SCRIPTS = {
         SIE_INVOICE_EMAIL_SL: {
-            SCRIPT_ID: 'customscript_pd_sie_invoice_email_suitelet',
-            DEPLOY_ID: 'customdeploy_pd_sie_invoice_email_suitelet',
+            SCRIPT_ID: 'customscript_pd_sie_invoice_email_sl',
+            DEPLOY_ID: 'customdeploy_pd_sie_invoice_email_sl',
             PARAMS: {
                 OVERRIDE_EMAIL: 'custscript_pd_sie_override_email'
             }

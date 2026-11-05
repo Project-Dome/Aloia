@@ -64,7 +64,7 @@
         <path>~/Objects/custom_script/customscript_pd_prd_purc_req_deletion_ue.xml</path>
         <path>~/Objects/custom_script/customscript_pd_sem_send_email_sl.xml</path>
         <path>~/Objects/custom_script/customscript_pd_sem_send_email_ue.xml</path>
-        <path>~/Objects/custom_script/customscript_pd_sie_invoice_email_suitelet.xml</path>
+        <path>~/Objects/custom_script/customscript_pd_sie_invoice_email_sl.xml</path>
         <path>~/Objects/custom_script/customscript_pd_suiteql.xml</path>
         <path>~/Objects/custom_script/customscript_pd_tno_inbound_track_num_ue.xml</path>
         <path>~/Objects/custom_script/customscript_pd_tno_track_notificat_ue.xml</path>

@@ -32,7 +32,7 @@ SuiteScripts/Dome/
   (os 4 exportam `generatePdf` / `getGroupPlan`)
 
 ## IDs
-- Script: `customscript_pd_sie_invoice_email_suitelet` / `customdeploy_pd_sie_invoice_email_suitelet`
+- Script: `customscript_pd_sie_invoice_email_sl` / `customdeploy_pd_sie_invoice_email_sl`
 - Parâmetro: `custscript_pd_sie_override_email` (Free-Form Text; vazio em produção)
 - Campo do cliente: `custentity_atlas_customer_invoice_email`
 

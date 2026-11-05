@@ -47,13 +47,13 @@ e a lib `projectdome/pd_c_netsuite_tools/` (não está no repo; os requires apon
 1. `suitecloud account:setup` → criar auth da sandbox (ex: `ALOIA-SB`). **Não** trocar o `defaultAuthId` do `project.json`.
 2. `suitecloud project:validate --server --authid ALOIA-SB`
 3. `suitecloud project:deploy --authid ALOIA-SB`
-4. Scripts sem objeto SDF → trocar o Script File na mão: pd_sie (`customscript_pd_sie_invoice_email_suitelet`),
+4. Scripts sem objeto SDF → trocar o Script File na mão: pd_sie (`customscript_pd_sie_invoice_email_sl`),
    `pd_fld_item_receipt_ue`, `pd-pow-sales-order-daily.mapreduce`, `delete_from_search_mr` (se existirem na conta).
 5. Os arquivos antigos continuam em `projectdome/` e `project_dome/` no File Cabinet (SDF não apaga).
    Só apagar depois de validar em produção.
 
 ## Trazidos da sandbox (não estavam no repo)
-- `customscript_pd_sie_invoice_email_suitelet` — objeto SDF novo (o script não existia na SB1). Parâmetro
+- `customscript_pd_sie_invoice_email_sl` — objeto SDF novo (o script não existia na SB1). Parâmetro
   `custscript_pd_sie_override_email` vazio; deployment RELEASED pra todos os papéis (ajustar audiência se quiser restringir).
 - `customscript_pd_pow_control_daily_mr` — objeto exportado da SB1, agora aponta pra
   `Dome/pd_sales_order/pd_pow_purchasing_owner/map_reduce/pd-pow-sales-order-daily.mapreduce.js` (arquivo já estava no repo).

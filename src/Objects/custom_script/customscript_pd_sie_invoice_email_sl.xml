@@ -1,4 +1,4 @@
-<suitelet scriptid="customscript_pd_sie_invoice_email_suitelet">
+<suitelet scriptid="customscript_pd_sie_invoice_email_sl">
   <description>Envio de Invoices por e-mail (Invoice + Packing List + ATA-106 + COFC)</description>
   <isinactive>F</isinactive>
   <name>PD | SIE | Invoice Email SL</name>
@@ -38,7 +38,7 @@
     </scriptcustomfield>
   </scriptcustomfields>
   <scriptdeployments>
-    <scriptdeployment scriptid="customdeploy_pd_sie_invoice_email_suitelet">
+    <scriptdeployment scriptid="customdeploy_pd_sie_invoice_email_sl">
       <allemployees>F</allemployees>
       <allpartners>F</allpartners>
       <allroles>T</allroles>

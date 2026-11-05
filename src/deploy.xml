@@ -1,14 +1,10 @@
 <deploy>
-    <configuration>
-        <path>~/AccountConfiguration/*</path>
-    </configuration>
+    <!-- DEV-623: deploy restrito a migracao pra Dome/ (arquivos + objetos de script).
+         Original: configuration, FileCabinet/*, Objects/*, Translations/* -->
     <files>
-        <path>~/FileCabinet/*</path>
+        <path>~/FileCabinet/SuiteScripts/Dome/*</path>
     </files>
     <objects>
-        <path>~/Objects/*</path>
+        <path>~/Objects/custom_script/*</path>
     </objects>
-    <translationimports>
-        <path>~/Translations/*</path>
-    </translationimports>
 </deploy>

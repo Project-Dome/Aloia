@@ -1,4 +1,14 @@
 <manifest projecttype="ACCOUNTCUSTOMIZATION">
   <projectname>Report for commissioning</projectname>
   <frameworkversion>1.0</frameworkversion>
+  <dependencies>
+    <features>
+      <feature required="true">SERVERSIDESCRIPTING</feature>
+    </features>
+    <objects>
+      <object>customrecord_pd_blc_bank_lay_convert</object>
+      <object>customrecord_pd_ccr_approval_comission</object>
+      <object>customrecord_pd_tno_track_notification</object>
+    </objects>
+  </dependencies>
 </manifest>

@@ -5,7 +5,7 @@
  */
 define(['N/url','N/search'], (url, search) => {
   // AJUSTE para o caminho real no seu File Cabinet (case-sensitive)
-  const CLIENT_MODULE_PATH = '../pd_prd_client/pd-prd-purchase-requisition-deletion.client';
+  const CLIENT_MODULE_PATH = '../client/pd-prd-purchase-requisition-deletion.client';
   
   // (opcional) IDs do Suitelet resolvidos no próprio UE
   const SL_SCRIPT_ID = 'customscript_pd_prd_purc_req_deletion_st';

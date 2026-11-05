@@ -12,6 +12,33 @@ define([
     
     (render, record, packingListLayout, utilsMd) => {
         /**
+         * Gera o PDF do Packing List e retorna o file.File — reutilizável por
+         * outros scripts via require() direto, sem precisar de HTTP.
+         * @param {string|number} invoiceId
+         * @returns {File}
+         */
+        const generatePdf = (invoiceId) => {
+
+            const invoiceRecord = record.load({
+                type: record.Type.INVOICE,
+                id: invoiceId
+            });
+
+            const params = utilsMd.manipulateInvoicePdf(invoiceRecord);
+
+            const html = packingListLayout.getXml(params);
+
+            const renderer = render.create();
+            renderer.templateContent = html;
+
+            const pdfFile = renderer.renderAsPdf();
+
+            pdfFile.name = `PACK_LIST_${params.invoiceNumber}.pdf`;
+
+            return pdfFile;
+        }
+
+        /**
          * Defines the Suitelet script trigger point.
          * @param {Object} scriptContext
          * @param {ServerRequest} scriptContext.request - Incoming request
@@ -22,26 +49,9 @@ define([
 
             try {
 
-                const {
-                    response,
-                    request
-                } = scriptContext;
+                const { request } = scriptContext;
 
-                const invoiceRecord = record.load({
-                    type: record.Type.INVOICE,
-                    id: request.parameters.invoiceid
-                });
-
-                const params = utilsMd.manipulateInvoicePdf(invoiceRecord);
-
-                const html = packingListLayout.getXml(params);
-
-                const renderer = render.create();
-                renderer.templateContent = html;
-
-                const pdfFile = renderer.renderAsPdf();
-
-                pdfFile.name = `PACK_LIST_${params.invoiceNumber}.pdf`;
+                const pdfFile = generatePdf(request.parameters.invoiceid);
 
                 scriptContext.response.writeFile({
                     file: pdfFile,
@@ -61,6 +71,6 @@ define([
 
         }
 
-        return {onRequest}
+        return { onRequest, generatePdf }
 
     });

@@ -687,10 +687,29 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
             name += (groupFilter === GROUP_NEW ? '_NEW' : '_OTHERS');
             name += '.pdf';
 
-            // Download forçado
-            context.response.setHeader({name: 'Content-Type', value: 'application/pdf'});
-            context.response.setHeader({name: 'Content-Disposition', value: 'inline; filename="' + name + '"'});
-            context.response.writeFile(pdfFile, true);
+            // Download forçado (só quando chamado via HTTP; generatePdf() reaproveita esta função sem response)
+            if (context) {
+                context.response.setHeader({name: 'Content-Type', value: 'application/pdf'});
+                context.response.setHeader({name: 'Content-Disposition', value: 'inline; filename="' + name + '"'});
+                context.response.writeFile(pdfFile, true);
+            }
+
+            pdfFile.name = name; // sem isso o email.send anexa como "report.pdf"
+
+            return {file: pdfFile, name: name};
+        }
+
+        // --- Exports reutilizáveis: chamados via require() direto por outros
+        //     scripts (ex: pd_sie_invoice_email), sem passar por HTTP ---
+        function getGroupPlan(invoiceId) {
+            var invoice = record.load({type: record.Type.INVOICE, id: invoiceId, isDynamic: false});
+            return planGroups(invoice);
+        }
+
+        function generatePdf(invoiceId, vendorId, group) {
+            var invoice = record.load({type: record.Type.INVOICE, id: invoiceId, isDynamic: false});
+            var groupFilter = group === GROUP_OTHERS ? GROUP_OTHERS : GROUP_NEW;
+            return renderPdf(null, invoice, vendorId || '', groupFilter);
         }
 
         function escapeXml(s) {
@@ -740,5 +759,5 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
             renderPdf(context, invoice, vendorId || '', groupFilter);
         }
 
-        return {onRequest: onRequest};
+        return {onRequest: onRequest, getGroupPlan: getGroupPlan, generatePdf: generatePdf};
     });

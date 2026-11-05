@@ -1,36 +1,36 @@
 /**
  * @NApiVersion 2.1
  * @NScriptType Suitelet
- * @Author Mário Augusto Braga Costa - Project Dome
+ * @author Mário Augusto Braga Costa - Project Dome
  */
 define(
     [
-        'N/log',
-        '../../pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-suitelet.util'
+        '/SuiteScripts/projectdome/pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-suitelet.util',
+        '/SuiteScripts/projectdome/pd_c_netsuite_tools/pd_cnt_common/pd-cntc-common.util.js'
     ],
     function (
-        log,
         suitelet_util
     ) {
 
         function onRequest(context) {
+
             return suitelet_util.build({
                 context: context,
-                title: 'Saving - Create VendorBill',
+                title: 'Approver Commission Saving',
                 statics: {
                     html: (
                         [
-                            'pd-pos-commission-payment.html'
+                            'pd-pos-commission-approval.html'
                         ]
                     ),
                     js: (
                         [
-                            'pd-pos-commission-payment.js'
+                            'pd-pos-commission-approval.js'
                         ]
                     ),
                     css: (
                         [
-                            'pd-pos-commission-payment.css'
+                            'pd-pos-commission-approval.css'
                         ]
                     )
                 }
@@ -38,7 +38,6 @@ define(
         }
 
         return {
-            onRequest: onRequest
+            onRequest: onRequest,
         };
-    }
-);
+    });

@@ -5,7 +5,7 @@
  */
 define(
     [
-        '../pd_pos_map_reduce_service/pd-pos-commission-approval.mapreduce.service'
+        '../service/pd-pos-commission-approval.mapreduce.service'
     ],
     function (
         map_reduce_service

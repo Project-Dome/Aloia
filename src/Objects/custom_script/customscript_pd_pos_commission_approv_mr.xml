@@ -5,7 +5,7 @@
   <notifyadmins>F</notifyadmins>
   <notifyemails></notifyemails>
   <notifyowner>T</notifyowner>
-  <scriptfile>[/SuiteScripts/projectdome/pd_purchase_order_saving/pd_pos_map_reduce/pd_pos_map_reduce_main/pd-pos-commission-approval.mapreduce.js]</scriptfile>
+  <scriptfile>[/SuiteScripts/Dome/pd_vendor_bill/pd_pos_purchase_order_saving/map_reduce/pd-pos-commission-approval.mapreduce.js]</scriptfile>
   <scriptdeployments>
     <scriptdeployment scriptid="customdeploy_pd_pos_commission_approv_mr">
       <buffersize>1</buffersize>

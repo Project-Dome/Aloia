@@ -9,14 +9,14 @@ define(
         'N/record',
         'N/search',
 
-        '../pd_pos_service/pd-pos-vendor-payment.service.js',
-        '../pd_pos_service/pd-pos-vendor-bill.service.js',
-        '../pd_pos_service/pd-pos-commission-approval.service.js',
-        '../pd_pos_service/pd-pos-status-commission.service.js',
+        '../service/pd-pos-vendor-payment.service.js',
+        '../service/pd-pos-vendor-bill.service.js',
+        '../service/pd-pos-commission-approval.service.js',
+        '../service/pd-pos-status-commission.service.js',
 
-        '../../pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-search.util',
-        '../../pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-record.util',
-        '../../pd_c_netsuite_tools/pd_cnt_common/pd-cntc-common.util.js'
+        '/SuiteScripts/projectdome/pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-search.util',
+        '/SuiteScripts/projectdome/pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-record.util',
+        '/SuiteScripts/projectdome/pd_c_netsuite_tools/pd_cnt_common/pd-cntc-common.util.js'
     ],
     function (
         log,

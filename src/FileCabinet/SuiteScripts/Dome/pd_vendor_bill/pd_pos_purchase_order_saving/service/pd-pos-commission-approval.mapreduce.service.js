@@ -14,9 +14,9 @@ define(
         'N/query',
 
 
-        '../../pd_pos_service/pd-pos-commission-approval.service',
-        '../../pd_pos_service/pd-pos-status-commission.service',
-        '../../pd_pos_service/pd-pos-vendor-bill.service',
+        './pd-pos-commission-approval.service',
+        './pd-pos-status-commission.service',
+        './pd-pos-vendor-bill.service',
     ],
     function (
         log,

@@ -8,10 +8,10 @@ define(
         'N/search',
         'N/log',
 
-        '../pd_pos_service/pd-pos-status-commission.service.js',
-        '../pd_pos_service/pd-pos-commission-approval.service.js',
-        '../pd_pos_service/pd-pos-vendor-bill.service.js',
-        '../pd_pos_service/pd-pos-script-parameters.service.js',
+        '../service/pd-pos-status-commission.service.js',
+        '../service/pd-pos-commission-approval.service.js',
+        '../service/pd-pos-vendor-bill.service.js',
+        '../service/pd-pos-script-parameters.service.js',
     ],
     function (
         search,

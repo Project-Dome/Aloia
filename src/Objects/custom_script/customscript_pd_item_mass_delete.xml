@@ -5,7 +5,7 @@
   <notifyadmins>F</notifyadmins>
   <notifyemails></notifyemails>
   <notifyowner>T</notifyowner>
-  <scriptfile>[/SuiteScripts/project_dome/pd_item_mass_delete/pd_item_mass_delete_mr.js]</scriptfile>
+  <scriptfile>[/SuiteScripts/Dome/pd_tools/pd_adm_admin_tools/map_reduce/pd_item_mass_delete_mr.js]</scriptfile>
   <scriptdeployments>
     <scriptdeployment scriptid="customdeploy_pd_item_mass_delete">
       <buffersize>1</buffersize>

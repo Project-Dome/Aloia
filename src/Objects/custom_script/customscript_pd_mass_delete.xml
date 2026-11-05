@@ -7,7 +7,7 @@
   <notifyemails></notifyemails>
   <notifyowner>T</notifyowner>
   <notifyuser>F</notifyuser>
-  <scriptfile>[/SuiteScripts/projectdome/pd_mass_delete/pd-mass-delete.js]</scriptfile>
+  <scriptfile>[/SuiteScripts/Dome/pd_tools/pd_adm_admin_tools/mass_update/pd-mass-delete.js]</scriptfile>
   <scriptdeployments>
     <scriptdeployment scriptid="customdeploy_pd_delete_allocschedule">
       <allemployees>T</allemployees>

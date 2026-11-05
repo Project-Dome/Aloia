@@ -17,6 +17,13 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
 
         var SYSTEM_NOTE_TYPE_CREATE = '1';
 
+        // Header do campo 11, definido pelos tipos de item presentes no documento:
+        // só serializados -> HEADER_SERIAL; só por lote -> HEADER_LOT; misto ou sem número -> HEADER_MIXED.
+        // O "11." é a numeração do formulário ATA Spec 106 e é mantido em todos os casos.
+        var HEADER_SERIAL = '11.Serial';
+        var HEADER_LOT = '11.Lot/Batch Number';
+        var HEADER_MIXED = '11.Lot/Serial #';
+
         // Fonte manuscrita (TTF/OTF no File Cabinet, marcada como "Available Without Login").
         // Se o arquivo não existir, cai no fallback Times italic.
         var SIGNATURE_FONT_PATH = 'SuiteScripts/projectdome/pd_pdf_ata_106/Fonts/GreatVibes-Regular.ttf';
@@ -183,15 +190,46 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
             }
         }
 
-        // Mesmo critério usado no invoice/packing list (DEV-867): item serializado exibe
-        // "SERIAL", item por lote exibe "BATCH/LOT".
-        function getItemRecordType(itemId) {
-            if (!itemId) return null;
-            return search.lookupFields({
-                type: search.Type.ITEM,
-                id: itemId,
-                columns: ['recordtype']
-            })['recordtype'];
+        /**
+         * Tipo de numeração do item a partir do recordtype:
+         *   serializedinventoryitem / serializedassemblyitem   -> 'serial'
+         *   lotnumberedinventoryitem / lotnumberedassemblyitem -> 'lot'
+         *   qualquer outro                                     -> ''
+         * Usa cache por execução pra não repetir o lookup do mesmo item em várias linhas.
+         */
+        function getNumberingType(itemId, cache) {
+            if (!itemId) return '';
+            if (cache.hasOwnProperty(itemId)) return cache[itemId];
+            var type = '';
+            try {
+                var recType = search.lookupFields({
+                    type: search.Type.ITEM,
+                    id: itemId,
+                    columns: ['recordtype']
+                }).recordtype || '';
+                if (recType.indexOf('serialized') === 0) type = 'serial';
+                else if (recType.indexOf('lotnumbered') === 0) type = 'lot';
+            } catch (e) {
+                log.audit('getNumberingType - falha no lookup', {itemId: itemId, message: e.message});
+            }
+            cache[itemId] = type;
+            return type;
+        }
+
+        /**
+         * Header do campo 11 conforme os tipos presentes nas linhas que efetivamente têm número
+         * (linhas "N/A" não têm numberingType e são ignoradas).
+         */
+        function resolveSerialHeader(rows) {
+            var hasSerial = false, hasLot = false;
+            for (var i = 0; i < rows.length; i++) {
+                if (!rows[i].serialText) continue;
+                if (rows[i].numberingType === 'serial') hasSerial = true;
+                else if (rows[i].numberingType === 'lot') hasLot = true;
+            }
+            if (hasSerial && !hasLot) return HEADER_SERIAL;
+            if (hasLot && !hasSerial) return HEADER_LOT;
+            return HEADER_MIXED;
         }
 
         // Monta o "plano" de geração: grupos por (vendorId, grupoStatus)
@@ -228,6 +266,9 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
         function collectLines(invoice, vendorIdFilter, groupFilter) {
             var lineCount = invoice.getLineCount({sublistId: 'item'}) || 0;
             var rows = [];
+
+            // Cache de tipo de numeração (serial/lot) por item, válido nesta execução.
+            var typeCache = {};
 
             for (var i = 0; i < lineCount; i++) {
                 var vendorOnLine = invoice.getSublistValue({
@@ -286,7 +327,6 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
                 })) || 1;
 
                 var itemId = invoice.getSublistValue({sublistId: 'item', fieldId: 'item', line: i}) || '';
-                var inventoryLabel = getItemRecordType(itemId) === "serializedinventoryitem" ? "SERIAL" : "BATCH/LOT";
 
                 // Seriais
                 try {
@@ -322,40 +362,38 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
 
                         } else {
 
+                            // Tipo de numeração do item (serial/lot) — só consultado quando
+                            // a linha tem número atribuído, que é quando ele importa pro header.
+                            var numberingType = getNumberingType(itemId, typeCache);
+
                             for (var a = 0; a < assCount; a++) {
 
-                                var issueInvNumId = invDet.getSublistValue({
+                                // Texto do número direto do subrecord (sem lookup no Inventory Number).
+                                var lotText = invDet.getSublistText({
                                     sublistId: 'inventoryassignment',
                                     fieldId: 'issueinventorynumber',
                                     line: a
+                                }) || '';
+
+                                if (!lotText) continue;
+
+                                var lotQuantity = invDet.getSublistValue({
+                                    sublistId: 'inventoryassignment',
+                                    fieldId: 'quantity',
+                                    line: a
                                 });
 
-                                if (issueInvNumId) {
-
-                                    var lotQuantity = invDet.getSublistValue({
-                                        sublistId: 'inventoryassignment',
-                                        fieldId: 'quantity',
-                                        line: a
-                                    });
-
-                                    var sn = search.lookupFields({
-                                        type: record.Type.INVENTORY_NUMBER,
-                                        id: issueInvNumId,
-                                        columns: ['inventorynumber']
-                                    });
-
-                                    if (sn && sn.inventorynumber) rows.push({
-                                        description: description,
-                                        quantity: lotQuantity * conversionFactor,
-                                        statusText: statusTxt,
-                                        statusVal: statusVal,
-                                        manufacturerName: manufName,
-                                        partNumber: partNumber,
-                                        partNumberCustomer: partNumberCustomer,
-                                        serialText: inventoryLabel + ': ' + escapeXml(sn.inventorynumber)
-                                    });
-
-                                }
+                                rows.push({
+                                    description: description,
+                                    quantity: lotQuantity * conversionFactor,
+                                    statusText: statusTxt,
+                                    statusVal: statusVal,
+                                    manufacturerName: manufName,
+                                    partNumber: partNumber,
+                                    partNumberCustomer: partNumberCustomer,
+                                    serialText: lotText,          // só o valor, sem prefixo; escape no XML
+                                    numberingType: numberingType
+                                });
                             }
                         }
 
@@ -400,14 +438,16 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
             var xml = '';
             for (var i = 0; i < rows.length; i++) {
                 var r = rows[i];
-                var desc = String(r.description || '').replace(/(?:\r\n|\r|\n)/g, '<br/>');
+                // Escapa o texto primeiro e só depois injeta <br/> como markup
+                // (antes o <br/> era escapado e aparecia como texto literal no PDF).
+                var descHtml = escapeXml(String(r.description || '').replace(/(?:\r\n|\r|\n)/g, '\n')).replace(/\n/g, '<br/>');
                 xml += ''
                     + '<tr class="data-row">'
                     + '<td class="center-cell">' + (i + 1) + '</td>'
-                    + '<td>' + escapeXml(desc) + '</td>'
+                    + '<td>' + descHtml + '</td>'
                     + '<td>' + escapeXml(r.manufacturerName || '') + '<br/>' + escapeXml(r.partNumberCustomer || '') + '</td>'
                     + '<td class="center-cell" style="white-space: nowrap;">' + escapeXml(formatQuantity(r.quantity)) + '</td>'
-                    + '<td class="center-cell">' + (r.serialText || '') + '</td>'
+                    + '<td class="center-cell">' + escapeXml(r.serialText || '') + '</td>'
                     + '<td class="center-cell">' + escapeXml(r.statusText || '') + '</td>'
                     + '</tr>';
             }
@@ -443,6 +483,10 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
 
             // Linhas do grupo atual (vendor + status)
             var rows = collectLines(invoice, vendorIdFilter, groupFilter);
+
+            // Header do campo 11 conforme os itens deste documento.
+            var serialHeader = resolveSerialHeader(rows);
+            log.debug({title: 'renderPdf - header lote/serial', details: {serialHeader: serialHeader}});
 
             // 13B: nome do fornecedor quando filtrado; vazio se sem fornecedor
             var obtainedFromName = vendorIdFilter ? getVendorName(vendorIdFilter) : '';
@@ -563,16 +607,17 @@ define(['N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/s
                 '    </tr>' +
                 '  </table>' +
 
-                // Tabela de itens (somente deste grupo)
+                // Tabela de itens (somente deste grupo) — header em <thead> pra repetir se quebrar de página.
+                // Mantém <td> no header pra preservar as bordas do estilo global de td.
                 '  <table>' +
-                '    <tr>' +
+                '    <thead><tr>' +
                 '      <td class="table-header" style="width: 8%;">6.Item</td>' +
                 '      <td class="table-header" style="width: 25%;">7.Description</td>' +
                 '      <td class="table-header" style="width: 25%;">8.Manufacturer &amp; Part Number</td>' +
                 '      <td class="table-header" style="width: 8%;">10.Qty</td>' +
-                '      <td class="table-header" style="width: 12%;">11.Lot/Serial #</td>' +
+                '      <td class="table-header" style="width: 12%;">' + escapeXml(serialHeader) + '</td>' +
                 '      <td class="table-header" style="width: 12%;">12.Status</td>' +
-                '    </tr>' +
+                '    </tr></thead>' +
                 buildItemRowsXml(rows) +
                 '  </table>' +
 

@@ -1,0 +1,56 @@
+<suitelet scriptid="customscript_pd_sie_invoice_email_suitelet">
+  <description>Envio de Invoices por e-mail (Invoice + Packing List + ATA-106 + COFC)</description>
+  <isinactive>F</isinactive>
+  <name>PD | SIE | Invoice Email SL</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <notifyuser>F</notifyuser>
+  <scriptfile>[/SuiteScripts/Dome/pd_invoice/pd_sie_invoice_email/suitelet/pd-sie-invoice-email.suitelet.js]</scriptfile>
+  <scriptcustomfields>
+    <scriptcustomfield scriptid="custscript_pd_sie_override_email">
+      <accesslevel>2</accesslevel>
+      <aidescription></aidescription>
+      <applyformatting>F</applyformatting>
+      <checkspelling>F</checkspelling>
+      <defaultchecked>F</defaultchecked>
+      <defaultselection></defaultselection>
+      <defaultvalue></defaultvalue>
+      <description>Se preenchido, todo e-mail vai para este endereço em vez do Customer Invoice Email (teste). Deixar vazio em produção.</description>
+      <displayheight></displayheight>
+      <displaytype>NORMAL</displaytype>
+      <displaywidth></displaywidth>
+      <dynamicdefault></dynamicdefault>
+      <fieldtype>TEXT</fieldtype>
+      <help></help>
+      <isformula>F</isformula>
+      <ismandatory>F</ismandatory>
+      <label>PD | SIE | Override Email (teste)</label>
+      <linktext></linktext>
+      <maxlength></maxlength>
+      <maxvalue></maxvalue>
+      <minvalue></minvalue>
+      <onparentdelete></onparentdelete>
+      <searchlevel>2</searchlevel>
+      <selectrecordtype></selectrecordtype>
+      <setting></setting>
+      <storevalue>T</storevalue>
+    </scriptcustomfield>
+  </scriptcustomfields>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_pd_sie_invoice_email_suitelet">
+      <allemployees>F</allemployees>
+      <allpartners>F</allpartners>
+      <allroles>T</allroles>
+      <audslctrole></audslctrole>
+      <custscript_pd_sie_override_email></custscript_pd_sie_override_email>
+      <eventtype></eventtype>
+      <isdeployed>T</isdeployed>
+      <isonline>F</isonline>
+      <loglevel>DEBUG</loglevel>
+      <runasrole></runasrole>
+      <status>RELEASED</status>
+      <title>PD | SIE | Invoice Email SL</title>
+    </scriptdeployment>
+  </scriptdeployments>
+</suitelet>

@@ -52,6 +52,26 @@ e a lib `projectdome/pd_c_netsuite_tools/` (não está no repo; os requires apon
 5. Os arquivos antigos continuam em `projectdome/` e `project_dome/` no File Cabinet (SDF não apaga).
    Só apagar depois de validar em produção.
 
+## Trazidos da sandbox (não estavam no repo)
+- `customscript_pd_sie_invoice_email_suitelet` — objeto SDF novo (o script não existia na SB1). Parâmetro
+  `custscript_pd_sie_override_email` vazio; deployment RELEASED pra todos os papéis (ajustar audiência se quiser restringir).
+- `customscript_pd_pow_control_daily_mr` — objeto exportado da SB1, agora aponta pra
+  `Dome/pd_sales_order/pd_pow_purchasing_owner/map_reduce/pd-pow-sales-order-daily.mapreduce.js` (arquivo já estava no repo).
+- `customscript_pd_tno_update_datefields_ue` + `customscript_pd_tno_update_datefields` (scheduled, backfill) — código
+  copiado da raiz de `SuiteScripts/` da SB1 (hash conferido) para `Dome/pd_purchase_order/pd_tno_tracking_number_order/`.
+  Usam `custrecord_pd_tno_ship_date` / `custrecord_pd_tno_delivery_date`: **confirmar que existem em produção antes de subir**.
+
+## Não migrado de propósito
+- **Credit Memo (DEV-845)** — está na branch `origin/feat/dev845`, não mergeada. Ela altera módulos compartilhados com a
+  Invoice (`pd_pdf_const_module`, `pd_pdf_search_module`, `pd_pdf_utils_module`). Na SB1 os scripts de Credit Memo continuam
+  usando as cópias antigas em `project_dome/pd_pdf_transaction/` (intactas). A DEV-845 precisa ser rebaseada em cima desta
+  branch (arquivos em `Dome/pd_credit_memo/...` ou `Dome/pd_invoice/pd_pdf_transaction/`) antes de entrar na `main`.
+- `inbound-in-transit.js` (raiz da SB1) — não tem script `customscript_pd_*` apontando pra ele.
+
+## Pastas antigas
+Não apagar `projectdome/` e `project_dome/` enquanto a DEV-845 não for migrada (Credit Memo usa os módulos antigos) e
+enquanto `pd_c_netsuite_tools` continuar lá.
+
 ## Checklist de teste (acionar cada script pelo menos 1x)
 
 **pd_bank_layout/pd_blc_bank_layout_conversion**

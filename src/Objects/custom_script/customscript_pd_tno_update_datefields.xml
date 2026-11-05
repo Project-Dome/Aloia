@@ -1,0 +1,9 @@
+<scheduledscript scriptid="customscript_pd_tno_update_datefields">
+  <description></description>
+  <isinactive>F</isinactive>
+  <name>PD | TNO - Update Tracking Date Fields</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <scriptfile>[/SuiteScripts/Dome/pd_purchase_order/pd_tno_tracking_number_order/scheduled/pd_tno_update_datefields.js]</scriptfile>
+</scheduledscript>

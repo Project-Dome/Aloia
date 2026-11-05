@@ -8,7 +8,7 @@ define(
         'N/log',
         'N/xml',
 
-        '../../pd_c_netsuite_tools/pd_cnt_common/pd-cntc-common.util.js'
+        '/SuiteScripts/projectdome/pd_c_netsuite_tools/pd_cnt_common/pd-cntc-common.util.js'
 
     ],
     function (

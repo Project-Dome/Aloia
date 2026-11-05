@@ -6,7 +6,7 @@
   <notifyemails></notifyemails>
   <notifyowner>T</notifyowner>
   <notifyuser>F</notifyuser>
-  <scriptfile>[/SuiteScripts/projectdome/pd_sem_send_email_billpayment/pd_sem_userevent/pd-sem-button-send-email.userevent.js]</scriptfile>
+  <scriptfile>[/SuiteScripts/Dome/pd_payment/pd_sem_send_email_payment/user_event/pd-sem-button-send-email.userevent.js]</scriptfile>
   <scriptdeployments>
     <scriptdeployment scriptid="customdeploy_pd_sem_send_email_ue_cust">
       <allemployees>T</allemployees>

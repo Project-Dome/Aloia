@@ -44,7 +44,7 @@ define(
                 });
 
                 // Define o caminho do Client Script (ainda a ser implementado)
-                form.clientScriptModulePath = "../pd_sem_client/pd-sem-send-email.client.js";
+                form.clientScriptModulePath = "../client/pd-sem-send-email.client.js";
             }
         }
 

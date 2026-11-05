@@ -6,7 +6,7 @@
   <notifyemails></notifyemails>
   <notifyowner>T</notifyowner>
   <notifyuser>F</notifyuser>
-  <scriptfile>[/SuiteScripts/projectdome/pd_pdf_ata_106/EntryPoints/PDFStructureCOFC.SL.js]</scriptfile>
+  <scriptfile>[/SuiteScripts/Dome/pd_invoice/pd_pdf_ata_106/suitelet/PDFStructureCOFC.SL.js]</scriptfile>
   <scriptdeployments>
     <scriptdeployment scriptid="customdeploy_pd_aae_cofc_pdf_sl">
       <allemployees>F</allemployees>

@@ -5,7 +5,7 @@
   <notifyadmins>F</notifyadmins>
   <notifyemails></notifyemails>
   <notifyowner>T</notifyowner>
-  <scriptfile>[/SuiteScripts/projectdome/pd_c_commission_report/pd_ccr_map_reduce/pd_ccr_map_reduce_main/pd-ccr-commission-approval.mapreduce.js]</scriptfile>
+  <scriptfile>[/SuiteScripts/Dome/pd_invoice/pd_ccr_commission_report/map_reduce/pd-ccr-commission-approval.mapreduce.js]</scriptfile>
   <scriptdeployments>
     <scriptdeployment scriptid="customdeploy_pd_ccr_commission_approv_mr">
       <buffersize>1</buffersize>

@@ -6,7 +6,7 @@
   <notifyemails></notifyemails>
   <notifyowner>T</notifyowner>
   <notifyuser>F</notifyuser>
-  <scriptfile>[/SuiteScripts/projectdome/pd_c_commission_report/pd_ccr_restlet/pd-ccr-screen.restlet.js]</scriptfile>
+  <scriptfile>[/SuiteScripts/Dome/pd_invoice/pd_ccr_commission_report/restlet/pd-ccr-screen.restlet.js]</scriptfile>
   <scriptdeployments>
     <scriptdeployment scriptid="customdeploy_pd_ccr_search_comission_rt">
       <allemployees>T</allemployees>

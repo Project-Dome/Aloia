@@ -3,7 +3,7 @@
  */
 define([
         "N/file",
-        "../../lib/xlsx.full.min"
+        "../modules/xlsx.full.min"
     ],
 
     (file, XLSX) => {

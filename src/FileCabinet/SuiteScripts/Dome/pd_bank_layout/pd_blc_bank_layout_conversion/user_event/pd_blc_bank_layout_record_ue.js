@@ -6,8 +6,8 @@ define([
         "N/record",
         "N/config",
 
-        "../../modules/pd_blc_constants_module",
-        "../services/pd_blc_bank_layout_record_service"
+        "../modules/pd_blc_constants_module",
+        "../service/pd_blc_bank_layout_record_service"
     ],
 
     (record, config, cts, bank_layout_service) => {

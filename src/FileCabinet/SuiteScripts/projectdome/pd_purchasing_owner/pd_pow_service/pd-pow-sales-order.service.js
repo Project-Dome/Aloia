@@ -347,9 +347,13 @@ define(
 
         function getLastAOGAssignmentForBuyer(employeeId) {
             try {
+                // Calcula no SQL ha quantos minutos foi a ultima atribuicao AOG.
+                // CURRENT_TIMESTAMP e a coluna ficam no mesmo fuso da sessao,
+                // entao a diferenca independe do fuso do usuario que executa.
                 let _results = query.runSuiteQL({
                     query: `
-                        SELECT TO_CHAR(MAX(tl.custcol_pd_pow_assignment_timestamp), 'YYYY-MM-DD HH24:MI:SS') AS last_aog_ts
+                        SELECT ROUND((CAST(CURRENT_TIMESTAMP AS DATE)
+                                      - CAST(MAX(tl.custcol_pd_pow_assignment_timestamp) AS DATE)) * 1440) AS minutes_since
                         FROM transactionline tl
                         INNER JOIN transaction t ON t.id = tl.transaction
                         WHERE t.type = 'SalesOrd'
@@ -361,11 +365,13 @@ define(
                     params: [employeeId, parseInt(URGENCY_AOG, 10)]
                 }).asMappedResults();
 
-                if (!_results || _results.length === 0 || !_results[0].last_aog_ts) return null;
+                if (!_results || _results.length === 0 || _results[0].minutes_since == null) return null;
 
-                let _iso = _results[0].last_aog_ts.replace(' ', 'T') + 'Z';
-                let _date = new Date(_iso);
-                return isNaN(_date.getTime()) ? null : _date.toISOString();
+                let _minutes = parseFloat(_results[0].minutes_since);
+                if (isNaN(_minutes)) return null;
+
+                // Converte para UTC real, mesmo referencial do lastAOGAssignment atualizado em memoria
+                return new Date(Date.now() - _minutes * 60 * 1000).toISOString();
 
             } catch (error) {
                 log.error('getLastAOGAssignmentForBuyer - error', error);
@@ -419,10 +425,8 @@ define(
 
         function prepareRoutinePool(buyers) {
             try {
-                let _twoHoursAgo = new Date(new Date().getTime() - 2 * 60 * 60 * 1000);
-
                 let _enriched = buyers.map(function (b) {
-                    let _queueCount = getBuyerQueueCount(b.id, _twoHoursAgo);
+                    let _queueCount = getBuyerQueueCount(b.id);
                     return Object.assign({}, b, { queueCount: _queueCount });
                 });
 
@@ -440,10 +444,11 @@ define(
             }
         }
 
-        function getBuyerQueueCount(employeeId, twoHoursAgo) {
+        function getBuyerQueueCount(employeeId) {
             try {
-                let _twoHoursAgoStr = twoHoursAgo.toISOString().replace('T', ' ').substring(0, 19);
-
+                // Janela de 2h calculada no proprio SQL (CURRENT_TIMESTAMP), no mesmo fuso
+                // da sessao que le a coluna. Antes o limite vinha de toISOString() (UTC) e era
+                // interpretado no fuso da sessao, ficando no futuro e zerando a fila.
                 let _results = query.runSuiteQL({
                     query: `
                         SELECT COUNT(*) AS cnt
@@ -456,9 +461,9 @@ define(
                         AND (tl.custcol_pd_pow_po_processed = 'F' OR tl.custcol_pd_pow_po_processed IS NULL)
                         AND (tl.custcol_pd_cso_dont_create_purchreq = 'F' OR tl.custcol_pd_cso_dont_create_purchreq IS NULL)
                         AND (tl.custcol_aae_line_status IS NULL OR tl.custcol_aae_line_status = 4)
-                        AND tl.custcol_pd_pow_assignment_timestamp >= TO_TIMESTAMP(?, 'YYYY-MM-DD HH24:MI:SS')
+                        AND tl.custcol_pd_pow_assignment_timestamp >= CURRENT_TIMESTAMP - INTERVAL '2' HOUR
                     `,
-                    params: [employeeId, _twoHoursAgoStr]
+                    params: [employeeId]
                 }).asMappedResults();
 
                 let _count = (_results && _results.length > 0) ? (parseInt(_results[0].cnt, 10) || 0) : 0;

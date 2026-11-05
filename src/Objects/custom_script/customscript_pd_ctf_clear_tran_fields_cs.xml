@@ -6,7 +6,7 @@
   <notifyemails></notifyemails>
   <notifyowner>T</notifyowner>
   <notifyuser>F</notifyuser>
-  <scriptfile>[/SuiteScripts/projectdome/pd_ctf_clear_transactions_fields/pd_ctf_client/pd-ctf-clear-transactions-fields.client.js]</scriptfile>
+  <scriptfile>[/SuiteScripts/Dome/pd_sales_order/pd_ctf_clear_transactions_fields/client/pd-ctf-clear-transactions-fields.client.js]</scriptfile>
   <scriptdeployments>
     <scriptdeployment scriptid="customdeploy_pd_ctf_clear_tran_fields_cs">
       <allemployees>T</allemployees>

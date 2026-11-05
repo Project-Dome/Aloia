@@ -5,7 +5,7 @@
   <notifyadmins>F</notifyadmins>
   <notifyemails></notifyemails>
   <notifyowner>T</notifyowner>
-  <scriptfile>[/SuiteScripts/projectdome/pd_purchasing_owner/pd_pow_map_reduce/pd-pow-purchase-requisition.mapreduce.js]</scriptfile>
+  <scriptfile>[/SuiteScripts/Dome/pd_sales_order/pd_pow_purchasing_owner/map_reduce/pd-pow-purchase-requisition.mapreduce.js]</scriptfile>
   <scriptdeployments>
     <scriptdeployment scriptid="customdeploy_pd_pow_purch_requisition_mr">
       <buffersize>1</buffersize>

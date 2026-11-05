@@ -6,7 +6,7 @@
   <notifyemails></notifyemails>
   <notifyowner>T</notifyowner>
   <notifyuser>F</notifyuser>
-  <scriptfile>[/SuiteScripts/project_dome/pd_cvs_convert_data/transaction/client/pd_cvs_transaction_conv_cl.js]</scriptfile>
+  <scriptfile>[/SuiteScripts/Dome/pd_sales_order/pd_cvs_convert_data/client/pd_cvs_transaction_conv_cl.js]</scriptfile>
   <scriptdeployments>
     <scriptdeployment scriptid="customdeploy_pd_cvs_transaction_cl">
       <allemployees>F</allemployees>

@@ -6,7 +6,7 @@
   <notifyemails></notifyemails>
   <notifyowner>T</notifyowner>
   <notifyuser>F</notifyuser>
-  <scriptfile>[/SuiteScripts/projectdome/pd_c_special_order/pd_cso_userevent/pd-cso-purchase-order.userevent.js]</scriptfile>
+  <scriptfile>[/SuiteScripts/Dome/pd_sales_order/pd_cso_special_order/user_event/pd-cso-purchase-order.userevent.js]</scriptfile>
   <scriptdeployments>
     <scriptdeployment scriptid="customdeploy_pd_cso_purchase_order_ue">
       <allemployees>T</allemployees>

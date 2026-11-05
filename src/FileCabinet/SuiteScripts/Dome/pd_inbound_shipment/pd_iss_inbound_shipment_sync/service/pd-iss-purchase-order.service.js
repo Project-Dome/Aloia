@@ -6,7 +6,7 @@
 define(
     [
         'N/log',
-        '../../pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-record.util.js'
+        '/SuiteScripts/projectdome/pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-record.util.js'
     ],
     function (
         log,

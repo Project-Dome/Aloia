@@ -6,7 +6,7 @@
 define(
     [
         'N/log',
-        '../pd_iss_service/pd-iss-inbound-shipment.service'
+        '../service/pd-iss-inbound-shipment.service'
     ],
     function (
         log,

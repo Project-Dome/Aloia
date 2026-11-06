@@ -5,8 +5,8 @@
  */
 define([
     'N/record', 'N/log', 'N/render', 'N/format', 'N/file', 'N/runtime', 'N/search',
-    '/SuiteScripts/projectdome/pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-suitelet.util',
-    '/SuiteScripts/projectdome/pd_c_netsuite_tools/pd_cnt_common/pd-cntc-common.util.js'
+    '/SuiteScripts/Dome/pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-suitelet.util',
+    '/SuiteScripts/Dome/pd_c_netsuite_tools/pd_cnt_common/pd-cntc-common.util.js'
 ],
     function (
         record, log, render, format, file, runtime, search,

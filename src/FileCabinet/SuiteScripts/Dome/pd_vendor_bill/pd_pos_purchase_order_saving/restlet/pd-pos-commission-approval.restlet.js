@@ -16,7 +16,7 @@ define(
         '../service/pd-pos-commission-approval.service.js',
         '../service/pd-pos-vendor-bill.service.js',
 
-        '/SuiteScripts/projectdome/pd_c_netsuite_tools/pd_cnt_common/pd-cntc-common.util.js'
+        '/SuiteScripts/Dome/pd_c_netsuite_tools/pd_cnt_common/pd-cntc-common.util.js'
     ],
     function (
         runtime,

@@ -8,6 +8,7 @@ Profundidade: **só mover + ajustar** — lógica não mudou, exceto os exports 
 ```
 SuiteScripts/Dome/
 ├── libs/            contents.js, fonts/GreatVibes-Regular.ttf (availablewithoutlogin=T)
+├── pd_c_netsuite_tools/      lib compartilhada (search/record/suitelet/restlet utils)
 ├── pd_invoice/      pd_pdf_transaction, pd_pdf_ata_106, pd_lgl_logistics_label,
 │                    pd_ccr_commission_report, pd_uoc_update_operation_cost, pd_sie_invoice_email
 ├── pd_sales_order/  pd_cso_special_order, pd_pow_purchasing_owner, pd_dcr_dynamic_commission_rate,
@@ -26,11 +27,11 @@ SuiteScripts/Dome/
 Dentro de cada projeto: `client/ user_event/ suitelet/ restlet/ map_reduce/ mass_update/ service/ use_case/ modules/ ui/`.
 
 Fora do escopo (ficaram onde estavam): `suitecode/`, `dev_suitecode/`, `po_form.js`, `PDFStructureCOFC-v2.SL.js`
-e a lib `projectdome/pd_c_netsuite_tools/` (não está no repo; os requires apontam pra ela por caminho absoluto).
+(a lib `pd_c_netsuite_tools` foi movida pra `Dome/pd_c_netsuite_tools/`).
 
 ## O que mudou no código
 - Requires relativos, `clientScriptModulePath` e caminho da fonte ajustados pro novo lugar.
-- Requires da `pd_c_netsuite_tools` → `/SuiteScripts/projectdome/pd_c_netsuite_tools/...` (absoluto).
+- Requires da `pd_c_netsuite_tools` → `/SuiteScripts/Dome/pd_c_netsuite_tools/...` (absoluto).
 - `<scriptfile>` dos 66 objetos SDF dos projetos movidos atualizado.
 - Renomeados: `item_receipt/modules/pd_frf_search_module.js` → `modules/pd_frf_item_receipt_search_module.js`
   (colidia com o outro `pd_frf_search_module.js`; ninguém faz require dele) e
@@ -70,7 +71,7 @@ e a lib `projectdome/pd_c_netsuite_tools/` (não está no repo; os requires apon
 
 ## Pastas antigas
 Não apagar `projectdome/` e `project_dome/` enquanto a DEV-845 não for migrada (Credit Memo usa os módulos antigos) e
-enquanto `pd_c_netsuite_tools` continuar lá.
+enquanto algum script fora do repo (ex.: Credit Memo) ainda usar `projectdome/pd_c_netsuite_tools`.
 
 ## Checklist de teste (acionar cada script pelo menos 1x)
 

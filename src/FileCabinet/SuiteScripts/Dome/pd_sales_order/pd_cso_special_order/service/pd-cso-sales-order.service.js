@@ -15,10 +15,10 @@ define([
     './pd-cso-purchase-order.service',
     '../../pd_pow_purchasing_owner/service/pd-pow-sales-order.service',
 
-    '/SuiteScripts/projectdome/pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-search.util.js',
-    '/SuiteScripts/projectdome/pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-record.util.js',
+    '/SuiteScripts/Dome/pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-search.util.js',
+    '/SuiteScripts/Dome/pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-record.util.js',
 
-    '/SuiteScripts/projectdome/pd_c_netsuite_tools/pd_cnt_common/pd-cntc-common.util.js'
+    '/SuiteScripts/Dome/pd_c_netsuite_tools/pd_cnt_common/pd-cntc-common.util.js'
 
 ], function (
     record,

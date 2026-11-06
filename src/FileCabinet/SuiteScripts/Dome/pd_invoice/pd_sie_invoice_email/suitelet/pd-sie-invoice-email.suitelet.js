@@ -15,7 +15,7 @@
 define(
     [
         'N/log',
-        '/SuiteScripts/projectdome/pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-suitelet.util',
+        '/SuiteScripts/Dome/pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-suitelet.util',
         '../use_case/pd-sie-list-customers.use_case',
         '../use_case/pd-sie-search-invoices.use_case',
         '../use_case/pd-sie-preview-email.use_case',

@@ -1,0 +1,5 @@
+.table tr th,
+.table tr td
+{
+    font-size: smaller;
+}

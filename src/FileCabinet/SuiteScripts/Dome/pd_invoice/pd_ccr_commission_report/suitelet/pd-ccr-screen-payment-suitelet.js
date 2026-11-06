@@ -5,7 +5,7 @@
  */
 define([
     'N/log',
-    '/SuiteScripts/projectdome/pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-suitelet.util'
+    '/SuiteScripts/Dome/pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-suitelet.util'
 ], function (log, suitelet_util) {
 
     function onRequest(context) {

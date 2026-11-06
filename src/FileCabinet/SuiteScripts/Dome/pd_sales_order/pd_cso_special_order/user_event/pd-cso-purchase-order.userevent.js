@@ -10,7 +10,7 @@ define([
   '../service/pd-cso-purchase-requisition.service',
   '../service/pd-cso-sales-order.service',
 
-  '/SuiteScripts/projectdome/pd_c_netsuite_tools/pd_cnt_common/pd-cntc-common.util.js'
+  '/SuiteScripts/Dome/pd_c_netsuite_tools/pd_cnt_common/pd-cntc-common.util.js'
 ], function (
   record,
   log,

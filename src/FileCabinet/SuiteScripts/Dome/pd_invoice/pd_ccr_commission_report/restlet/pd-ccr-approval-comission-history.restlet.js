@@ -10,9 +10,9 @@ define(
         'N/log',
         'N/url',
         'N/query',
-        '/SuiteScripts/projectdome/pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-search.util.js',
-        '/SuiteScripts/projectdome/pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-restlet.util',
-        '/SuiteScripts/projectdome/pd_c_netsuite_tools/pd_cnt_common/pd-cntc-common.util.js'
+        '/SuiteScripts/Dome/pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-search.util.js',
+        '/SuiteScripts/Dome/pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-restlet.util',
+        '/SuiteScripts/Dome/pd_c_netsuite_tools/pd_cnt_common/pd-cntc-common.util.js'
     ],
     function (
         runtime,

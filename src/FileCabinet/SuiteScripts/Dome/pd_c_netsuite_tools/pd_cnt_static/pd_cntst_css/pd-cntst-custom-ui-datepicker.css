@@ -1,0 +1,12 @@
+.table.table-date-picker td { padding: 6px !important; font-size: 0.75rem; }
+.table.table-date-picker .day { cursor: pointer; }
+.table.table-date-picker .day { font-weight: 50; }
+.table.table-date-picker .day.last-month, 
+.table.table-date-picker .day.next-month { background-color: #d3d3d330; }
+.table.table-date-picker .day:hover,
+.table.table-date-picker .day.last-month:hover,     
+.table.table-date-picker .day.next-month:hover { background-color: rgba(176, 196, 222, 0.281); }
+.table.table-date-picker .day:not(.last-month, .next-month) { font-weight: 400; }
+.table.table-date-picker .weekend:not(.last-month, .next-month) { font-weight: 600; }
+.table.table-date-picker .today { font-weight: 700 !important; }
+.table.table-date-picker .date { padding: 5px; }

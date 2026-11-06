@@ -26,7 +26,7 @@ SuiteScripts/Dome/
 ```
 
 ## Dependências legadas (não migradas, caminho absoluto)
-- `/SuiteScripts/projectdome/pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-suitelet.util` (serve HTML/JS no GET)
+- `/SuiteScripts/Dome/pd_c_netsuite_tools/pd_cnt_standard/pd-cnts-suitelet.util` (serve HTML/JS no GET)
 - `/SuiteScripts/project_dome/pd_pdf_transaction/invoice/suitelet/pd_pdf_invoice_sl` e `pd_pdf_packing_list_sl`
 - `/SuiteScripts/projectdome/pd_pdf_ata_106/EntryPoints/PDFStructure.SL` e `PDFStructureCOFC.SL`
   (os 4 exportam `generatePdf` / `getGroupPlan`)

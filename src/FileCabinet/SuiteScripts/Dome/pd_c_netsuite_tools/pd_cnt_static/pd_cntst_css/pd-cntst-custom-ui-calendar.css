@@ -1,7 +1,0 @@
-.table.table-calendar td { padding: 6px !important; }
-.table.table-calendar .day { font-weight: 50; }
-.table.table-calendar .day.last-month, 
-.table.table-calendar .day.next-month { background-color: #d3d3d330; }
-.table.table-calendar .day:not(.last-month, .next-month) .date { font-weight: 400; }
-.table.table-calendar .weekend:not(.last-month, .next-month) .date { font-weight: 600; }
-.table.table-calendar .today .date { font-weight: 700 !important; }

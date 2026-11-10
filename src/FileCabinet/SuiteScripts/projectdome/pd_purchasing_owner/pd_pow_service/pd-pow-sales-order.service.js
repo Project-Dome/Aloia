@@ -347,13 +347,9 @@ define(
 
         function getLastAOGAssignmentForBuyer(employeeId) {
             try {
-                // Calcula no SQL ha quantos minutos foi a ultima atribuicao AOG.
-                // CURRENT_TIMESTAMP e a coluna ficam no mesmo fuso da sessao,
-                // entao a diferenca independe do fuso do usuario que executa.
                 let _results = query.runSuiteQL({
                     query: `
-                        SELECT ROUND((CAST(CURRENT_TIMESTAMP AS DATE)
-                                      - CAST(MAX(tl.custcol_pd_pow_assignment_timestamp) AS DATE)) * 1440) AS minutes_since
+                        SELECT TO_CHAR(MAX(tl.custcol_pd_pow_assignment_timestamp), 'YYYY-MM-DD HH24:MI:SS') AS last_aog_ts
                         FROM transactionline tl
                         INNER JOIN transaction t ON t.id = tl.transaction
                         WHERE t.type = 'SalesOrd'
@@ -365,13 +361,11 @@ define(
                     params: [employeeId, parseInt(URGENCY_AOG, 10)]
                 }).asMappedResults();
 
-                if (!_results || _results.length === 0 || _results[0].minutes_since == null) return null;
+                if (!_results || _results.length === 0 || !_results[0].last_aog_ts) return null;
 
-                let _minutes = parseFloat(_results[0].minutes_since);
-                if (isNaN(_minutes)) return null;
-
-                // Converte para UTC real, mesmo referencial do lastAOGAssignment atualizado em memoria
-                return new Date(Date.now() - _minutes * 60 * 1000).toISOString();
+                let _iso = _results[0].last_aog_ts.replace(' ', 'T') + 'Z';
+                let _date = new Date(_iso);
+                return isNaN(_date.getTime()) ? null : _date.toISOString();
 
             } catch (error) {
                 log.error('getLastAOGAssignmentForBuyer - error', error);
@@ -446,9 +440,10 @@ define(
 
         function getBuyerQueueCount(employeeId) {
             try {
-                // Janela de 2h calculada no proprio SQL (CURRENT_TIMESTAMP), no mesmo fuso
-                // da sessao que le a coluna. Antes o limite vinha de toISOString() (UTC) e era
-                // interpretado no fuso da sessao, ficando no futuro e zerando a fila.
+                // The 2h window is computed in the database (CURRENT_TIMESTAMP), in the same
+                // timezone as the stored timestamp. Building the cutoff in JS (UTC) pushed it
+                // hours into the future, so the queue was always 0.
+
                 let _results = query.runSuiteQL({
                     query: `
                         SELECT COUNT(*) AS cnt
@@ -461,7 +456,7 @@ define(
                         AND (tl.custcol_pd_pow_po_processed = 'F' OR tl.custcol_pd_pow_po_processed IS NULL)
                         AND (tl.custcol_pd_cso_dont_create_purchreq = 'F' OR tl.custcol_pd_cso_dont_create_purchreq IS NULL)
                         AND (tl.custcol_aae_line_status IS NULL OR tl.custcol_aae_line_status = 4)
-                        AND tl.custcol_pd_pow_assignment_timestamp >= CURRENT_TIMESTAMP - INTERVAL '2' HOUR
+                        AND tl.custcol_pd_pow_assignment_timestamp >= CURRENT_TIMESTAMP - (2/24)
                     `,
                     params: [employeeId]
                 }).asMappedResults();
@@ -785,6 +780,30 @@ define(
         }
 
         // ─────────────────────────────────────────────
+        // LEGACY COMPATIBILITY
+        // The daily/queue counters were removed in the revised policy, but other
+        // modules still call these functions (e.g. PD | CSO | PO Synchronizing SO UE
+        // calls decrementBuyerCounter). They are intentional no-ops so those callers
+        // keep working instead of throwing "is not a function".
+        // ─────────────────────────────────────────────
+
+        function decrementBuyerCounter(employeeId) {
+            return true;
+        }
+
+        function incrementBuyerCounter(employeeId) {
+            return true;
+        }
+
+        function handleCreatePODecrement(oldRecord, newRecord) {
+            return true;
+        }
+
+        function resetAllBuyerCounters() {
+            return 0;
+        }
+
+        // ─────────────────────────────────────────────
         // EXPORTS
         // ─────────────────────────────────────────────
 
@@ -792,7 +811,11 @@ define(
             readData: readData,
             assignBuyerToSO: assignBuyerToSO,
             assignBuyerToLine: assignBuyerToLine,
-            getEligibleBuyers: getEligibleBuyers
+            getEligibleBuyers: getEligibleBuyers,
+            decrementBuyerCounter: decrementBuyerCounter,
+            incrementBuyerCounter: incrementBuyerCounter,
+            handleCreatePODecrement: handleCreatePODecrement,
+            resetAllBuyerCounters: resetAllBuyerCounters
         };
     }
 );

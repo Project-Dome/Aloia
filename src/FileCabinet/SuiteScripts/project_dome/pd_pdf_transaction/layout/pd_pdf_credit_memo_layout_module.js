@@ -302,6 +302,14 @@ define([],
     line-height: 9pt;
 }
 
+                        .do-not-pay {
+                            font-family: Helvetica, sans-serif;
+                            font-size: 11pt;
+                            font-weight: bold;
+                            line-height: 14pt;
+                            text-transform: uppercase;
+                        }
+
                         .box-spacer { height: 6pt; font-size: 1pt; line-height: 1pt; }
 
                     </style>
@@ -482,9 +490,6 @@ define([],
 
         function getBottomBlock(parameters) {
 
-            // Terms and Conditions não foi listado nas remoções do TECH-SPEC - permanece, com o
-            // texto vindo de parameters.termsCondition (fonte única compartilhada com o Invoice,
-            // lida em pd_pdf_credit_memo_utils_module.js a partir do deployment do Invoice).
             let html = (`
                             </tbody>
                         </table>
@@ -494,7 +499,7 @@ define([],
                         <table class="bottom-wrap">
                           <tr>
 
-                            <!-- ESQUERDA: SPECIAL + TERMS -->
+                            <!-- ESQUERDA: SPECIAL INSTRUCTIONS (Terms and Conditions removido) -->
                             <td class="col-left">
 
                               <table class="box">
@@ -503,22 +508,8 @@ define([],
                                 </tr>
                                 <tr>
                                   <td class="box-body">
+                                    <span class="do-not-pay">THIS IS A CREDIT NOTE - DO NOT PAY</span><br/>
                                     ${formatMultilineText(parameters.specialInstructions)}
-                                  </td>
-                                </tr>
-                              </table>
-
-                              <table style="width:100%; border-collapse:collapse;">
-                                <tr><td class="box-spacer">&nbsp;</td></tr>
-                              </table>
-
-                              <table class="box">
-                                <tr>
-                                  <td class="box-title">Terms and Conditions</td>
-                                </tr>
-                                <tr>
-                                  <td class="box-body terms-body">
-                                    ${parameters.termsCondition}
                                   </td>
                                 </tr>
                               </table>

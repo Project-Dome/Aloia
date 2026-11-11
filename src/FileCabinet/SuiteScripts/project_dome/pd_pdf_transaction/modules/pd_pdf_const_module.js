@@ -17,7 +17,7 @@ define([],
                         INVOICE_PDF: "custbody_pd_pdf_invoice_pdf_dc",
                         CREDIT_MEMO_PDF: "custbody_pd_pdf_credit_memo_pdf_dc",
                         RELATED_SO: "custbody_related_so",
-                        AUTHORIZED_SIGNATURE: "custbody_pd_authorized_signature"
+                        REQUESTED_BY: "custbody_pd_requestby"
                     }
                 },
                 RETURN_AUTHORIZATION: {
@@ -41,12 +41,6 @@ define([],
                         DEPLOY: "customdeploy_pd_pdf_print_credit_memo_sl"
                     }
                 }
-            },
-            // Parâmetro de deployment do Invoice (customdeploy_pd_pdf_print_invoice_sl),
-            // reaproveitado como fonte única de Terms and Conditions pelo Credit Memo - decisão
-            // confirmada com o usuário para não duplicar o texto em dois lugares.
-            SCRIPT_PARAMETERS: {
-                INVOICE_TERMS_CONDITION: "custscript_pd_invoice_terms_condition_ds"
             }
         }
 

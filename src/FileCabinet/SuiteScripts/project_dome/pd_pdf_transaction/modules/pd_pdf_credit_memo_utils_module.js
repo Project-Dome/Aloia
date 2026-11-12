@@ -381,12 +381,11 @@ define([
 
                 }
 
-                // Nome completo do funcionário selecionado em custbody_pd_authorized_signature -
-                // getText já retorna o nome completo de exibição (List/Record Employee), sem
-                // necessidade de lookup adicional.
+                // Authorized Signature: texto de exibição do campo Requested By
+                // (custbody_pd_requestby) do próprio Credit Memo.
                 PDFParameters["authorizedSignatureName"] = creditMemoRecord.getText({
-                    fieldId: cts.CUSTOM_FIELDS.TRANSACTIONS.BODY_FIELDS.AUTHORIZED_SIGNATURE
-                });
+                    fieldId: cts.CUSTOM_FIELDS.TRANSACTIONS.BODY_FIELDS.REQUESTED_BY
+                }) || "";
 
                 PDFParameters["specialInstructions"] = buildSpecialInstructions(
                     originType,
@@ -395,12 +394,6 @@ define([
                     invoiceFromRmaRecord,
                     PDFParameters["authorizedSignatureName"]
                 );
-
-                // Terms and Conditions: fonte única compartilhada com o Invoice - lê o parâmetro
-                // já configurado no deployment customdeploy_pd_pdf_print_invoice_sl, em vez de
-                // duplicar o texto em um campo próprio do Credit Memo. Decisão confirmada com o
-                // usuário: alterar esse parâmetro no Invoice reflete automaticamente no CM.
-                PDFParameters["termsCondition"] = getSharedInvoiceTermsCondition();
 
                 PDFParameters["freight"] = creditMemoRecord.getValue({
                     fieldId: "altshippingcost"
@@ -433,75 +426,6 @@ define([
                         message: e.message
                     }
                 });
-            }
-
-        }
-
-        /**
-         * Lê o parâmetro de Terms and Conditions diretamente do deployment do Suitelet do
-         * Invoice (customdeploy_pd_pdf_print_invoice_sl / custscript_pd_invoice_terms_condition_ds).
-         * Leitura cross-script, somente consulta - não grava nem depende de nenhuma alteração
-         * em arquivo do domínio do Invoice. Script parameters de deployment ficam expostos como
-         * campos do próprio record "scriptdeployment", carregável pelo scriptid do deployment.
-         */
-        /**
-         * Normaliza o valor lido via record.getValue() no scriptdeployment do Invoice. Esse
-         * caminho de leitura (genérico, de campo de record) não é idêntico ao
-         * Script.getParameter() usado pelo Invoice - entity-encode HTML e insere uma tag de
-         * fechamento </br> solta (que não existe no valor originalmente configurado no
-         * deployment). Correção isolada aqui, no Credit Memo - não altera nada no Invoice.
-         */
-        function normalizeSharedTermsCondition(text) {
-
-            if (!text) return "";
-
-            return text
-                .replace(/&lt;/gi, '<')
-                .replace(/&gt;/gi, '>')
-                .replace(/&amp;/gi, '&')
-                .replace(/<\/br\s*>/gi, '');
-
-        }
-
-        function getSharedInvoiceTermsCondition() {
-
-            try {
-
-                // record.load para type "scriptdeployment" exige o internal ID numérico - o
-                // scriptid (ex.: customdeploy_pd_pdf_print_invoice_sl) não é aceito como id.
-                // Resolve o internal ID via busca antes de carregar o record.
-                const deploymentSearchResults = search.create({
-                    type: "scriptdeployment",
-                    filters: [["scriptid", "is", cts.CUSTOM_SCRIPT.SUITELET.PRINT_INVOICE.DEPLOY]],
-                    columns: ["internalid"]
-                }).run().getRange({start: 0, end: 1});
-
-                if (!deploymentSearchResults || !deploymentSearchResults.length) return "";
-
-                const deploymentInternalId = deploymentSearchResults[0].getValue({name: "internalid"});
-
-                if (!deploymentInternalId) return "";
-
-                const invoiceSuiteletDeployment = record.load({
-                    type: "scriptdeployment",
-                    id: deploymentInternalId
-                });
-
-                const rawTermsCondition = invoiceSuiteletDeployment.getValue({
-                    fieldId: cts.SCRIPT_PARAMETERS.INVOICE_TERMS_CONDITION
-                }) || "";
-
-                return normalizeSharedTermsCondition(rawTermsCondition);
-
-            } catch (e) {
-                log.error({
-                    title: "ERROR IN - getSharedInvoiceTermsCondition",
-                    details: {
-                        stack: e.stack,
-                        message: e.message
-                    }
-                });
-                return "";
             }
 
         }
@@ -549,8 +473,8 @@ define([
                     fieldId: cts.CUSTOM_FIELDS.RETURN_AUTHORIZATION.BODY_FIELDS.RETURN_REASON
                 }) : "";
 
+                // O aviso "DO NOT PAY" não entra aqui: é renderizado em destaque pelo layout.
                 return [
-                    "This is a credit note DO NOT PAY",
                     `Invoice ${invoiceNumberFromRma} - RMA ${rmaNumber}`,
                     `${returnReason}`,
                     `Authorized Signature: ${authorizedSignatureName}`
@@ -562,7 +486,6 @@ define([
             const invoiceNumber = searchModule.transactionLookup(createdFromId) || "";
 
             return [
-                "This is a credit note DO NOT PAY",
                 `Invoice ${invoiceNumber}`,
                 `Authorized Signature: ${authorizedSignatureName}`
             ].join("\n");
